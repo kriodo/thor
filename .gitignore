@@ -1,0 +1,8 @@
+.vscode/
+.idea/
+.DS_Store
+./vendor
+./log
+output
+main
+

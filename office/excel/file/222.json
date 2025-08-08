@@ -1,0 +1,733 @@
+[{
+  "title": "付款主体",
+  "field_key": "company_master",
+  "must_exi": true
+},
+  {
+    "title": "子项目名称",
+    "like_title": "子项目名称",
+    "field_key": "project_subitem_name",
+    "must_exi": true
+  },
+  {
+    "title": "姓名",
+    "field_key": "name",
+    "must_exi": true
+  },
+  {
+    "title": "证件号码",
+    "other_title": [
+      "身份证号"
+    ],
+    "field_key": "certificate_no",
+    "must_exi": true
+  },
+  {
+    "title": "缴纳城市",
+    "field_key": "social_city_1",
+    "must_exi": false
+  },
+  {
+    "title": "社保缴纳城市",
+    "field_key": "social_city",
+    "must_exi": false
+  },
+  {
+    "title": "公积金缴纳城市",
+    "field_key": "housing_fund_city",
+    "must_exi": false
+  },
+  {
+    "title": "缴费类型",
+    "field_key": "pay_type",
+    "must_exi": true
+  },
+  {
+    "title": "缴费月份",
+    "other_title": [
+      "社保缴费月份"
+    ],
+    "field_key": "pay_month",
+    "must_exi": true
+  },
+  {
+    "title": "缴费月数",
+    "field_key": "pay_month_num",
+    "must_exi": false
+  },
+  {
+    "title": "养老",
+    "field_key": "",
+    "must_exi": false,
+    "children": [{
+      "title": "基数",
+      "field_key": "old_age_insurance_base_1",
+      "must_exi": false
+    },
+      {
+        "title": "企业",
+        "other_title": [
+          "单位"
+        ],
+        "field_key": "",
+        "must_exi": false,
+        "children": [{
+          "title": "基数",
+          "field_key": "old_age_insurance_base"
+        },
+          {
+            "title": "比例",
+            "field_key": "old_age_insurance_company_rate"
+          },
+          {
+            "title": "应缴",
+            "field_key": "old_age_insurance_company_cost"
+          }
+        ]
+      },
+      {
+        "title": "个人",
+        "field_key": "",
+        "must_exi": false,
+        "children": [{
+          "title": "基数",
+          "field_key": "old_age_insurance_personal_base"
+        },
+          {
+            "title": "比例",
+            "field_key": "old_age_insurance_personal_rate"
+          },
+          {
+            "title": "应缴",
+            "field_key": "old_age_insurance_personal_cost"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "失业",
+    "field_key": "",
+    "must_exi": false,
+    "children": [{
+      "title": "基数",
+      "field_key": "unemployment_insurance_base_1",
+      "must_exi": false
+    },
+      {
+        "title": "企业",
+        "other_title": [
+          "单位"
+        ],
+        "field_key": "",
+        "must_exi": false,
+        "children": [{
+          "title": "基数",
+          "field_key": "unemployment_insurance_base"
+        },
+          {
+            "title": "比例",
+            "field_key": "unemployment_insurance_company_rate"
+          },
+          {
+            "title": "应缴",
+            "field_key": "unemployment_insurance_company_cost"
+          }
+        ]
+      },
+      {
+        "title": "个人",
+        "field_key": "",
+        "must_exi": false,
+        "children": [{
+          "title": "基数",
+          "field_key": "unemployment_insurance_personal_base"
+        },
+          {
+            "title": "比例",
+            "field_key": "unemployment_insurance_personal_rate"
+          },
+          {
+            "title": "应缴",
+            "field_key": "unemployment_insurance_personal_cost"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "工伤",
+    "field_key": "",
+    "must_exi": false,
+    "children": [{
+      "title": "基数",
+      "field_key": "employment_injury_insurance_base_1",
+      "must_exi": false
+    },
+      {
+        "title": "企业",
+        "other_title": [
+          "单位"
+        ],
+        "field_key": "",
+        "must_exi": false,
+        "children": [{
+          "title": "基数",
+          "field_key": "employment_injury_insurance_base"
+        },
+          {
+            "title": "比例",
+            "field_key": "employment_injury_insurance_company_rate"
+          },
+          {
+            "title": "应缴",
+            "field_key": "employment_injury_insurance_company_cost"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "补充工伤",
+    "field_key": "",
+    "must_exi": false,
+    "children": [{
+      "title": "基数",
+      "field_key": "replenish_employment_injury_insurance_base_1",
+      "must_exi": false
+    },
+      {
+        "title": "企业",
+        "other_title": [
+          "单位"
+        ],
+        "field_key": "",
+        "must_exi": false,
+        "children": [{
+          "title": "基数",
+          "field_key": "replenish_employment_injury_insurance_base"
+        },
+          {
+            "title": "比例",
+            "field_key": "replenish_employment_injury_insurance_company_rate"
+          },
+          {
+            "title": "应缴",
+            "field_key": "replenish_employment_injury_insurance_company_cost"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "生育",
+    "field_key": "生育",
+    "other_title": ["医疗（含生育）"],
+    "must_exi": false,
+    "children": [{
+      "title": "基数",
+      "field_key": "maternity_insurance_base_1",
+      "must_exi": false
+    },
+      {
+        "title": "企业",
+        "other_title": [
+          "单位"
+        ],
+        "field_key": "",
+        "must_exi": false,
+        "children": [{
+          "title": "基数",
+          "field_key": "maternity_insurance_base"
+        },
+          {
+            "title": "比例",
+            "field_key": "maternity_insurance_company_rate"
+          },
+          {
+            "title": "应缴",
+            "field_key": "maternity_insurance_company_cost"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "医疗",
+    "other_title": ["医疗（含生育）"],
+    "field_key": "",
+    "must_exi": false,
+    "children": [{
+      "title": "基数",
+      "field_key": "medical_insurance_base_1",
+      "must_exi": false
+    },
+      {
+        "title": "企业",
+        "other_title": [
+          "单位"
+        ],
+        "field_key": "",
+        "must_exi": false,
+        "children": [{
+          "title": "基数",
+          "field_key": "medical_insurance_base"
+        },
+          {
+            "title": "比例",
+            "field_key": "medical_insurance_company_rate"
+          },
+          {
+            "title": "应缴",
+            "field_key": "medical_insurance_company_cost"
+          }
+        ]
+      },
+      {
+        "title": "个人",
+        "field_key": "",
+        "must_exi": false,
+        "children": [{
+          "title": "基数",
+          "field_key": "medical_insurance_personal_base"
+        },
+          {
+            "title": "比例",
+            "field_key": "medical_insurance_personal_rate"
+          },
+          {
+            "title": "应缴",
+            "field_key": "medical_insurance_personal_cost"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "大病医疗（定额或按比例计算）",
+    "other_title": [
+      "大病医疗"
+    ],
+    "field_key": "",
+    "must_exi": false,
+    "children": [{
+      "title": "基数",
+      "field_key": "critical_illness_insurance_base_1",
+      "must_exi": false
+    },
+      {
+        "title": "企业",
+        "other_title": [
+          "单位"
+        ],
+        "field_key": "",
+        "must_exi": false,
+        "children": [{
+          "title": "基数",
+          "field_key": "critical_illness_insurance_base"
+        },
+          {
+            "title": "比例",
+            "field_key": "critical_illness_insurance_company_rate"
+          },
+          {
+            "title": "应缴",
+            "field_key": "critical_illness_insurance_company_cost"
+          }
+        ]
+      },
+      {
+        "title": "个人",
+        "field_key": "",
+        "must_exi": false,
+        "children": [{
+          "title": "基数",
+          "field_key": "critical_illness_insurance_personal_base"
+        },
+          {
+            "title": "比例",
+            "field_key": "critical_illness_insurance_personal_rate"
+          },
+          {
+            "title": "应缴",
+            "field_key": "critical_illness_insurance_personal_cost"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "医疗保险个人账户",
+    "field_key": "",
+    "must_exi": false,
+    "children": [{
+      "title": "基数",
+      "field_key": "commercial_medical_insurance_base_1",
+      "must_exi": false
+    },
+      {
+        "title": "企业",
+        "other_title": [
+          "单位"
+        ],
+        "field_key": "",
+        "must_exi": false,
+        "children": [{
+          "title": "基数",
+          "field_key": "commercial_medical_insurance_base"
+        },
+          {
+            "title": "比例",
+            "field_key": "commercial_medical_insurance_company_rate"
+          },
+          {
+            "title": "应缴",
+            "field_key": "commercial_medical_insurance_company_cost"
+          }
+        ]
+      },
+      {
+        "title": "个人",
+        "field_key": "",
+        "must_exi": false,
+        "children": [{
+          "title": "基数",
+          "field_key": "commercial_medical_insurance_personal_base"
+        },
+          {
+            "title": "比例",
+            "field_key": "commercial_medical_insurance_personal_rate"
+          },
+          {
+            "title": "应缴",
+            "field_key": "commercial_medical_insurance_personal_cost"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "补充医疗",
+    "field_key": "",
+    "must_exi": false,
+    "children": [{
+      "title": "基数",
+      "field_key": "supplement_medical_base_1",
+      "must_exi": false
+    },
+      {
+        "title": "企业",
+        "other_title": [
+          "单位"
+        ],
+        "field_key": "",
+        "must_exi": false,
+        "children": [{
+          "title": "基数",
+          "field_key": "supplement_medical_base"
+        },
+          {
+            "title": "比例",
+            "field_key": "supplement_medical_company_rate"
+          },
+          {
+            "title": "应缴",
+            "field_key": "supplement_medical_company_cost"
+          }
+        ]
+      },
+      {
+        "title": "个人",
+        "field_key": "",
+        "must_exi": false,
+        "children": [{
+          "title": "基数",
+          "field_key": "supplement_medical_personal_base"
+        },
+          {
+            "title": "比例",
+            "field_key": "supplement_medical_personal_rate"
+          },
+          {
+            "title": "应缴",
+            "field_key": "supplement_medical_personal_cost"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "住院补充医疗",
+    "field_key": "",
+    "must_exi": false,
+    "children": [{
+      "title": "基数",
+      "field_key": "supplement_inpatient_medical_base_1",
+      "must_exi": false
+    },
+      {
+        "title": "企业",
+        "other_title": [
+          "单位"
+        ],
+        "field_key": "",
+        "must_exi": false,
+        "children": [{
+          "title": "基数",
+          "field_key": "supplement_inpatient_medical_base"
+        },
+          {
+            "title": "比例",
+            "field_key": "supplement_inpatient_medical_company_rate"
+          },
+          {
+            "title": "应缴",
+            "field_key": "supplement_inpatient_medical_company_cost"
+          }
+        ]
+      },
+      {
+        "title": "个人",
+        "field_key": "",
+        "must_exi": false,
+        "children": [{
+          "title": "基数",
+          "field_key": "supplement_inpatient_medical_personal_base"
+        },
+          {
+            "title": "比例",
+            "field_key": "supplement_inpatient_medical_personal_rate"
+          },
+          {
+            "title": "应缴",
+            "field_key": "supplement_inpatient_medical_personal_cost"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "护理费",
+    "field_key": "",
+    "must_exi": false,
+    "children": [{
+      "title": "基数",
+      "field_key": "nursing_expenses_base_1",
+      "must_exi": false
+    },
+      {
+        "title": "企业",
+        "other_title": [
+          "单位"
+        ],
+        "field_key": "",
+        "must_exi": false,
+        "children": [{
+          "title": "基数",
+          "field_key": "nursing_expenses_base"
+        },
+          {
+            "title": "比例",
+            "field_key": "nursing_expenses_company_rate"
+          },
+          {
+            "title": "应缴",
+            "field_key": "nursing_expenses_company_cost"
+          }
+        ]
+      },
+      {
+        "title": "个人",
+        "field_key": "",
+        "must_exi": false,
+        "children": [{
+          "title": "基数",
+          "field_key": "nursing_expenses_personal_base"
+        },
+          {
+            "title": "比例",
+            "field_key": "nursing_expenses_personal_rate"
+          },
+          {
+            "title": "应缴",
+            "field_key": "nursing_expenses_personal_cost"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "采暖费",
+    "field_key": "",
+    "must_exi": false,
+    "children": [{
+      "title": "企业",
+      "other_title": [
+        "单位"
+      ],
+      "field_key": "",
+      "must_exi": false,
+      "children": [{
+        "title": "应缴",
+        "field_key": "heating_cost"
+      }]
+    }]
+  },
+  {
+    "title": "社保利息（滞纳金）",
+    "field_key": "",
+    "must_exi": false,
+    "children": [{
+      "title": "企业利息（滞纳金）",
+      "field_key": "company_interest_late_fee"
+    },
+      {
+        "title": "个人利息（滞纳金）",
+        "field_key": "personal_interest_late_fee"
+      }
+    ]
+  },
+  {
+    "title": "公积金",
+    "field_key": "公积金",
+    "must_exi": false,
+    "children": [{
+      "title": "基数",
+      "field_key": "housing_fund_base_1",
+      "must_exi": false
+    },
+      {
+        "title": "企业",
+        "other_title": [
+          "单位"
+        ],
+        "field_key": "",
+        "must_exi": false,
+        "children": [{
+          "title": "基数",
+          "field_key": "housing_fund_base"
+        },
+          {
+            "title": "比例",
+            "field_key": "housing_fund_company_rate"
+          },
+          {
+            "title": "应缴",
+            "field_key": "housing_fund_company_cost"
+          }
+        ]
+      },
+      {
+        "title": "个人",
+        "field_key": "",
+        "must_exi": false,
+        "children": [{
+          "title": "基数",
+          "field_key": "housing_fund_personal_base"
+        },
+          {
+            "title": "比例",
+            "field_key": "housing_fund_personal_rate"
+          },
+          {
+            "title": "应缴",
+            "field_key": "housing_fund_personal_cost"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "社保小计",
+    "field_key": "",
+    "must_exi": false,
+    "children": [{
+      "title": "企业",
+      "other_title": [
+        "单位"
+      ],
+      "field_key": "social_total_company"
+    },
+      {
+        "title": "个人",
+        "field_key": "social_total_personal"
+      }
+    ]
+  },
+  {
+    "title": "社保合计",
+    "field_key": "social_total",
+    "must_exi": false
+  },
+  {
+    "title": "公积金小计",
+    "other_title": ["公积金"],
+    "field_key": "公积金小计",
+    "must_exi": false,
+    "children": [{
+      "title": "企业",
+      "other_title": [
+        "单位"
+      ],
+      "field_key": "housing_fund_total_company"
+    },
+      {
+        "title": "个人",
+        "field_key": "housing_fund_total_personal"
+      }
+    ]
+  },
+  {
+    "title": "公积金合计",
+    "field_key": "housing_fund_total"
+  },
+  {
+    "title": "残保金",
+    "field_key": "disability_insurance"
+  },
+  {
+    "title": "制卡费",
+    "field_key": "card_fee"
+  },
+  {
+    "title": "档案管理费",
+    "field_key": "management_fee"
+  },
+  {
+    "title": "劳动手册工本费",
+    "field_key": "labor_handbook_fee"
+  },
+  {
+    "title": "养老手册工本费",
+    "field_key": "pension_handbook_fee"
+  },
+  {
+    "title": "医疗手册工本费",
+    "field_key": "medical_handbook_fee"
+  },
+  {
+    "title": "其它",
+    "field_key": "other"
+  },
+  {
+    "title": "社保公积金服务费",
+    "field_key": "service_fee"
+  },
+  {
+    "title": "服务费优惠",
+    "field_key": "service_fee_preferential",
+    "must_exi": false
+  },
+  {
+    "title": "费用总计",
+    "other_title": [
+      "费用共计"
+    ],
+    "field_key": "total_cost",
+    "must_exi": true
+  },
+  {
+    "title": "备注",
+    "field_key": "remark"
+  }
+]

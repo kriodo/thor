@@ -61,17 +61,21 @@ func ExcelDateToTime(excelDate string) (time.Time, error) {
 
 // AnyToTimestamp 各种日期格式转时间戳（秒）
 func AnyToTimestamp(date string) int64 {
+	if date == "" {
+		return 0
+	}
+
 	if tool.ContainsEnglishWord(date) {
 		tt, err := time.Parse("Jan-06", date)
-		if err != nil {
-			return 0
+		if err == nil && tt.Unix() > 0 {
+			return tt.Unix()
 		}
-		return tt.Unix()
-
+		return 0
 	}
+
 	var (
 		dateLen   = tool.LenChar(date)
-		tt        = time.Time{}
+		tt        time.Time
 		err       error
 		formatArr []string
 	)
@@ -81,26 +85,24 @@ func AnyToTimestamp(date string) int64 {
 		formatArr = []string{"2006"}
 	case 5: // excel时间
 		tt, err = ExcelDateToTime(date)
-		if err != nil && tt.Unix() > 0 {
+		if err == nil && tt.Unix() > 0 {
 			return tt.Unix()
 		}
 		formatArr = []string{"20061", "2006年"}
 	case 6:
-		formatArr = []string{"200601", "2006-1", "2006/1", "2006.1", "200601", "1-2-06", "1/2/06", "1.2.06"}
+		formatArr = []string{"200601", "2006-1", "2006/1", "2006.1", "1-2-06", "1/2/06", "1.2.06"}
 	case 7:
-		formatArr = []string{"2006-01", "2006/01", "2006.01", "2006-01", "2006/01", "2006.01", "2006年1月"}
+		formatArr = []string{"2006-01", "2006/01", "2006.01", "2006年1月"}
 	case 8:
-		formatArr = []string{"20060102", "2006/1/2", "2006-1-2", "2006.1.2", "01-02-06", "15:04:05", "20060102", "2006年01月"}
+		formatArr = []string{"20060102", "2006/1/2", "2006-1-2", "2006.1.2", "01-02-06", "15:04:05", "2006年01月"}
 	case 9:
 		formatArr = []string{"2006年1月2号", "2006年1月2日"}
 	case 10:
-		formatArr = []string{"2006-01-02", "2006/01/02", "2006.01.02", "2006-01-02",
-			"2006/01/02", "2006.01.02", "2006年01月2号", "2006年1月02号",
-			"2006年01月2日", "2006年1月02日"}
+		formatArr = []string{"2006-01-02", "2006/01/02", "2006.01.02", "2006年01月2号", "2006年1月02号", "2006年01月2日", "2006年1月02日"}
 	case 11:
-		formatArr = []string{"2006年01月02号", "2006年01月02日", "20060102 15", "2006年01月02日"}
+		formatArr = []string{"2006年01月02号", "2006年01月02日", "20060102 15"}
 	case 12:
-		formatArr = []string{"1/2/06 00:00", "1-2-06 00:00", "1.2.06 00:00", "06/1/2 00:00", "06-1-2 00:00", "06-1-2 00:00"}
+		formatArr = []string{"1/2/06 00:00", "1-2-06 00:00", "1.2.06 00:00", "06/1/2 00:00", "06-1-2 00:00"}
 	case 13:
 		formatArr = []string{"2006-01-02 15", "2006/01/02 15", "2006.01.02 15"}
 	case 14:
@@ -120,15 +122,14 @@ func AnyToTimestamp(date string) int64 {
 	default:
 		return 0
 	}
+
 	for _, v := range formatArr {
 		tt, err = DateToTime(date, DateFormat(v))
-		if err != nil && tt.Unix() <= 0 {
-			continue
+		if err == nil && tt.Unix() > 0 {
+			return tt.Unix()
 		}
-		return tt.Unix()
 	}
 	return 0
-
 }
 
 // FormatStringToRangeDate 解析字符串区间日期（年月）如：2006.01-2006.06

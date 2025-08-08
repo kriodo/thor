@@ -119,45 +119,8 @@ func BetweenDaysForDate(startVal, endVal int64) []string {
 	return list
 }
 
-// BetweenMonthsForDate 根据开始日期和结束日期计算出时间段内所有（年月）日期
-func BetweenMonthsForDate(startDate, endDate string) []string {
-	if startDate == endDate {
-		return []string{startDate}
-	}
-	var tArr []string
-	t1, err := DateToTime(startDate, YYYYMM_0)
-	if err != nil {
-		return tArr
-	}
-	t2, err := DateToTime(endDate, YYYYMM_0)
-	if err != nil {
-
-		return tArr
-	}
-	tArr = append(tArr, t1.Format(string(YYYYMM_0)))
-	var i int = 1
-	for {
-		t := t1.AddDate(0, i, 0)
-		tArr = append(tArr, t.Format(string(YYYYMM_0)))
-		if t == t2 {
-			break
-		}
-		i++
-		if i > 200 { // 防止死循环
-			break
-		}
-	}
-
-	return tArr
-}
-
 // BetweenMonthByTimestamp 获取两个时间戳(月)之间的月份时间戳(秒) 如：【2006-01,2007-02]
-func BetweenMonthByTimestamp(startVal, endVal int64) []int64 {
-	// 格式化时间戳
-	var (
-		start = TimestampFormat(startVal, YYYYMM_0)
-		end   = TimestampFormat(endVal, YYYYMM_0)
-	)
+func BetweenMonthByTimestamp(start, end int64) []int64 {
 	if start > end {
 		return []int64{}
 	}
@@ -183,4 +146,14 @@ func BetweenMonthByTimestamp(startVal, endVal int64) []int64 {
 	}
 
 	return dates
+}
+
+// BetweenMonthsForDate 根据开始日期和结束日期计算出时间段内所有（年月）日期
+func BetweenMonthsForDate(startDate, endDate string, df DateFormat) []string {
+	vals := BetweenMonthByTimestamp(DateToTimestamp(startDate, df), DateToTimestamp(endDate, df))
+	var list []string
+	for _, val := range vals {
+		list = append(list, TimestampToDate(val, YYYYMM_0))
+	}
+	return list
 }

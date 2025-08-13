@@ -77,7 +77,7 @@ func FormatHeaderInfo(tree []*Header, level uint, fieldInfo []*FieldInfo) ([]*Fi
 				YIndex:    level,
 				LastLevel: childLen == 0,
 				MustExi:   header.Import.MustExi,
-				Width:     float64(tool.LenChar(header.Title))*1.2 + 8,
+				Width:     CalHeaderTitleWidth(header.Title),
 			})
 			continue
 		}
@@ -228,4 +228,9 @@ func (a HeadSlice) Swap(i, j int) { // 重写 Swap() 方法
 }
 func (a HeadSlice) Less(i, j int) bool { // 重写 Less() 方法， 从大到小排序
 	return a[j].Weight < a[i].Weight
+}
+
+// CalHeaderTitleWidth 计算表头宽度
+func CalHeaderTitleWidth(title string) float64 {
+	return float64(tool.LenChar(title))*1.2 + 8
 }

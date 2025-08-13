@@ -2,6 +2,7 @@ package header
 
 import (
 	"fmt"
+	"github.com/kriodo/thor/office/tool"
 	"sort"
 	"strings"
 )
@@ -37,11 +38,12 @@ type ImportAttr struct {
 
 // FieldInfo 表头字段的信息
 type FieldInfo struct {
-	Key       string `json:"key,omitempty"`        // 字段key
-	XIndex    uint   `json:"x_index,omitempty"`    // 字段所在X位置(从0开始)
-	YIndex    uint   `json:"y_index,omitempty"`    // 字段所在Y位置(从1开始)
-	LastLevel bool   `json:"last_level,omitempty"` // 是否最后一级字段
-	MustExi   bool   `json:"must_exi,omitempty"`   // 是否必填
+	Key       string  `json:"key,omitempty"`        // 字段key
+	XIndex    uint    `json:"x_index,omitempty"`    // 字段所在X位置(从0开始)
+	YIndex    uint    `json:"y_index,omitempty"`    // 字段所在Y位置(从1开始)
+	LastLevel bool    `json:"last_level,omitempty"` // 是否最后一级字段
+	MustExi   bool    `json:"must_exi,omitempty"`   // 是否必填
+	Width     float64 `json:"width,omitempty"`      // 字段宽度
 }
 
 func (h *Header) SetChildrenMaxLen(val uint) {
@@ -68,9 +70,6 @@ func FormatHeaderInfo(tree []*Header, level uint, fieldInfo []*FieldInfo) ([]*Fi
 	for i, header := range tree {
 		childLen := len(header.Children)
 		tree[i].level = level
-		//if _, exi := fieldInfo[header.FieldKey]; exi {
-		//	return nil, fmt.Errorf("字段FieldKey重复: " + header.FieldKey)
-		//}
 		if childLen == 0 {
 			tree[i].isLast = true
 			fieldInfo = append(fieldInfo, &FieldInfo{
@@ -78,6 +77,7 @@ func FormatHeaderInfo(tree []*Header, level uint, fieldInfo []*FieldInfo) ([]*Fi
 				YIndex:    level,
 				LastLevel: childLen == 0,
 				MustExi:   header.Import.MustExi,
+				Width:     float64(tool.LenChar(header.Title))*1.2 + 8,
 			})
 			continue
 		}

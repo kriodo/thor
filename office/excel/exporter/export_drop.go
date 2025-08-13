@@ -15,6 +15,14 @@ type DropInfo struct {
 	ValueList   []string // 下拉数据(如果有历史数据可以不填写)
 }
 
+// FieldDropInfo 字段下拉框数据详情
+type FieldDropInfo struct {
+	UniqueKey string   // 下拉框对应的唯一标识符（长度不能超过200）
+	FieldKeys []string // 字段集合
+	YEndIndex uint     // 纵坐标结束
+	ValueList []string // 下拉数据(如果有历史数据可以不填写)
+}
+
 // SetDrop 设置excel下拉框属性
 func (er *Exporter) SetDrop(infos []*DropInfo) error {
 	for _, info := range infos {
@@ -26,13 +34,32 @@ func (er *Exporter) SetDrop(infos []*DropInfo) error {
 	return nil
 }
 
+// SetDropByFieldKey 设置字段下拉框属性
+func (er *Exporter) SetDropByFieldKey(infos []*FieldDropInfo) error {
+	for _, info := range infos {
+		for _, key := range info.FieldKeys {
+			err := er.setDrop(&DropInfo{
+				UniqueKey:   info.UniqueKey,
+				XIndex:      er.GetFieldXIndex(key),
+				YStartIndex: er.GetDataStartY(),
+				YEndIndex:   info.YEndIndex,
+				ValueList:   info.ValueList,
+			})
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 // setDrop 设置excel下拉框属性
 func (er *Exporter) setDrop(info *DropInfo) error {
-	if er.curSheetName == "" {
+	if er.curSheet == nil {
 		return fmt.Errorf("未设置sheet: %s", info.UniqueKey)
 	}
 	if info.XIndex == "" || info.UniqueKey == "" {
-		return fmt.Errorf("%s的Drop的参数不能为空", er.curSheetName)
+		return fmt.Errorf("%s的Drop的参数不能为空", er.curSheet.sheetName)
 	}
 	// 以被引用的sheet表为基准，先创建隐藏sheet页，再设置引用该sheet的所有列
 	// 只能调用一次，不然会重复创建隐藏sheet
@@ -90,11 +117,11 @@ func (er *Exporter) setDrop(info *DropInfo) error {
 		}
 	}
 	// 在第一个sheet页应用数据验证规则
-	err := er.file.AddDataValidation(er.curSheetName, dv)
+	err := er.file.AddDataValidation(er.curSheet.sheetName, dv)
 	if err != nil {
 		return fmt.Errorf("SetDropList失败: %s %+v", info.UniqueKey, err)
 	}
-	key := er.curSheetName + "-" + info.XIndex
+	key := er.curSheet.sheetName + "-" + info.XIndex
 	er.dropInfo[key] = &DropInfo{
 		UniqueKey:   info.UniqueKey,
 		XIndex:      info.XIndex,

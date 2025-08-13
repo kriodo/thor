@@ -12,7 +12,7 @@ func (er *Exporter) SetTree(tree []*header.Header) *Exporter {
 	if er.err != nil {
 		return er
 	}
-	curSheet, err := er.GetSheetInfo(er.curSheetName)
+	curSheet, err := er.GetCurSheetInfo()
 	if err != nil {
 		er.err = err
 		return er
@@ -37,11 +37,12 @@ func (er *Exporter) SetTree(tree []*header.Header) *Exporter {
 		return er
 	}
 	// 设置最后表头数据宽度
-	_, er.err = er.setHeaderWidth(curSheet.headerTree, curSheet.headerStartY)
+	er.err = er.setHeaderWidth()
 	if er.err != nil {
 		return er
 	}
-	er.sheet[er.curSheetName] = curSheet
+	er.sheet[er.curSheet.sheetName] = curSheet
+	er.curSheet = curSheet
 	return er
 }
 
@@ -89,7 +90,7 @@ func (er *Exporter) handleHeader(headers []*header.Header, x, y uint) error {
 	if er.err != nil {
 		return er.err
 	}
-	curSheet, err := er.GetSheetInfo(er.curSheetName)
+	curSheet, err := er.GetCurSheetInfo()
 	if err != nil {
 		return err
 	}
@@ -121,7 +122,7 @@ func (er *Exporter) left2right(val *header.Header, x uint, y uint) error {
 	if er.err != nil {
 		return er.err
 	}
-	curSheet, err := er.GetSheetInfo(er.curSheetName)
+	curSheet, err := er.GetCurSheetInfo()
 	if err != nil {
 		return err
 	}
@@ -132,8 +133,8 @@ func (er *Exporter) left2right(val *header.Header, x uint, y uint) error {
 	if err != nil {
 		return fmt.Errorf("JoinCellNameLeft失败: %s-%d %+v", leftLetter, y, err)
 	}
-	if err = er.file.SetCellValue(er.curSheetName, left, val.Title); err != nil {
-		return fmt.Errorf("SetCellValue失败: %s-%s-%s %+v", er.curSheetName, left, val.Title, err)
+	if err = er.file.SetCellValue(curSheet.sheetName, left, val.Title); err != nil {
+		return fmt.Errorf("SetCellValue失败: %s-%s-%s %+v", curSheet.sheetName, left, val.Title, err)
 	}
 	// 行合并单元格
 	rightIndex := leftIndex + header.ChildrenLen(val.Children) - 1
@@ -142,16 +143,16 @@ func (er *Exporter) left2right(val *header.Header, x uint, y uint) error {
 	if err != nil {
 		return fmt.Errorf("JoinCellNameRight失败: %s-%d %+v", rightLetter, y, err)
 	}
-	if err = er.file.MergeCell(er.curSheetName, left, right); err != nil {
-		return fmt.Errorf("MergeCell失败: %s-%s-%s %+v", er.curSheetName, left, right, err)
+	if err = er.file.MergeCell(curSheet.sheetName, left, right); err != nil {
+		return fmt.Errorf("MergeCell失败: %s-%s-%s %+v", curSheet.sheetName, left, right, err)
 	}
 	// 为标题行设置样式
 	styleId := curSheet.styleId
 	if val.Export.StyleId > 0 {
 		styleId = val.Export.StyleId
 	}
-	if err = er.file.SetCellStyle(er.curSheetName, left, right, styleId); err != nil {
-		return fmt.Errorf("SetCellStyle失败: %s-%s-%s-%d %+v", er.curSheetName, left, right, styleId, err)
+	if err = er.file.SetCellStyle(curSheet.sheetName, left, right, styleId); err != nil {
+		return fmt.Errorf("SetCellStyle失败: %s-%s-%s-%d %+v", curSheet.sheetName, left, right, styleId, err)
 	}
 	return nil
 }
@@ -161,7 +162,7 @@ func (er *Exporter) up2down(val *header.Header, x uint, y uint) error {
 	if er.err != nil {
 		return er.err
 	}
-	curSheet, err := er.GetSheetInfo(er.curSheetName)
+	curSheet, err := er.GetCurSheetInfo()
 	if err != nil {
 		return err
 	}
@@ -174,30 +175,30 @@ func (er *Exporter) up2down(val *header.Header, x uint, y uint) error {
 	if err != nil {
 		return fmt.Errorf("JoinCellNameDown失败: %s-%d %+v", letter, curSheet.GetHeaderEndY(), err)
 	}
-	if err = er.file.SetCellValue(er.curSheetName, up, val.Title); err != nil {
-		return fmt.Errorf("SetCellValue失败: %s-%s-%s %+v", er.curSheetName, up, val.Title, err)
+	if err = er.file.SetCellValue(curSheet.sheetName, up, val.Title); err != nil {
+		return fmt.Errorf("SetCellValue失败: %s-%s-%s %+v", curSheet.sheetName, up, val.Title, err)
 	}
 	// 合并单元格
-	if err = er.file.MergeCell(er.curSheetName, up, down); err != nil {
-		return fmt.Errorf("MergeCell失败: %s-%s-%s %+v", er.curSheetName, up, down, err)
+	if err = er.file.MergeCell(curSheet.sheetName, up, down); err != nil {
+		return fmt.Errorf("MergeCell失败: %s-%s-%s %+v", curSheet.sheetName, up, down, err)
 	}
 	// 为标题行设置样式
 	styleId := curSheet.styleId
 	if val.Export.StyleId > 0 {
 		styleId = val.Export.StyleId
 	}
-	if err = er.file.SetCellStyle(er.curSheetName, up, down, styleId); err != nil {
-		return fmt.Errorf("SetCellStyle失败: %s-%s-%s-%d %+v", er.curSheetName, up, down, styleId, err)
+	if err = er.file.SetCellStyle(curSheet.sheetName, up, down, styleId); err != nil {
+		return fmt.Errorf("SetCellStyle失败: %s-%s-%s-%d %+v", curSheet.sheetName, up, down, styleId, err)
 	}
 	// 批注
 	if val.Export.Comment != "" {
-		if err = er.file.AddComment(er.curSheetName, excelize.Comment{
+		if err = er.file.AddComment(curSheet.sheetName, excelize.Comment{
 			Cell: fmt.Sprintf("%s%d", letter, y),
 			Paragraph: []excelize.RichTextRun{
 				{Text: val.Export.Comment},
 			},
 		}); err != nil {
-			return fmt.Errorf("AddComment failed. val: %+v err: %+v", val, err)
+			return fmt.Errorf("AddComment失败: %s %+v", letter, err)
 		}
 	}
 	return nil

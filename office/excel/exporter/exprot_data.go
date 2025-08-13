@@ -22,7 +22,7 @@ const (
 
 // SetHeaderStartX 设置表头起始列（必须SetHeader之前操作）
 func (er *Exporter) SetHeaderStartX(index uint) *Exporter {
-	curSheet, err := er.GetSheetInfo(er.curSheetName)
+	curSheet, err := er.GetCurSheetInfo()
 	if err != nil {
 		er.err = err
 		return er
@@ -32,13 +32,13 @@ func (er *Exporter) SetHeaderStartX(index uint) *Exporter {
 		return er
 	}
 	curSheet.headerStartX = index
-	er.sheet[er.curSheetName] = curSheet
+	er.sheet[er.curSheet.sheetName] = curSheet
 	return er
 }
 
 // SetHeaderStartY 设置表头起始行（必须SetHeader之前操作）
 func (er *Exporter) SetHeaderStartY(index uint) *Exporter {
-	curSheet, err := er.GetSheetInfo(er.curSheetName)
+	curSheet, err := er.GetCurSheetInfo()
 	if err != nil {
 		er.err = err
 		return er
@@ -51,13 +51,13 @@ func (er *Exporter) SetHeaderStartY(index uint) *Exporter {
 		index = 1
 	}
 	curSheet.headerStartY = index
-	er.sheet[er.curSheetName] = curSheet
+	er.sheet[er.curSheet.sheetName] = curSheet
 	return er
 }
 
 // SetDataStartX 设置数据起始行（必须SetHeader之前操作）
 func (er *Exporter) SetDataStartX(index uint) *Exporter {
-	curSheet, err := er.GetSheetInfo(er.curSheetName)
+	curSheet, err := er.GetCurSheetInfo()
 	if err != nil {
 		er.err = err
 		return er
@@ -69,7 +69,7 @@ func (er *Exporter) SetDataStartX(index uint) *Exporter {
 	if index <= 1 {
 		index = 1
 	}
-	er.sheet[er.curSheetName] = curSheet
+	er.sheet[er.curSheet.sheetName] = curSheet
 	return er
 }
 
@@ -78,7 +78,7 @@ func (er *Exporter) SetDataByRow(rows [][]interface{}) *Exporter {
 	if er.err != nil {
 		return er
 	}
-	curSheet, err := er.GetSheetInfo(er.curSheetName)
+	curSheet, err := er.GetCurSheetInfo()
 	if err != nil {
 		er.err = err
 		return er
@@ -96,7 +96,7 @@ func (er *Exporter) SetDataByMap(dataMap []map[string]interface{}) *Exporter {
 	if er.err != nil {
 		return er
 	}
-	curSheet, err := er.GetSheetInfo(er.curSheetName)
+	curSheet, err := er.GetCurSheetInfo()
 	if err != nil {
 		er.err = err
 		return er
@@ -124,7 +124,7 @@ func (er *Exporter) SetDataMapWithStyle(dataMap []map[string]*RowData) *Exporter
 	if er.err != nil {
 		return er
 	}
-	curSheet, err := er.GetSheetInfo(er.curSheetName)
+	curSheet, err := er.GetCurSheetInfo()
 	if err != nil {
 		er.err = err
 		return er
@@ -160,7 +160,7 @@ func (er *Exporter) handleDataRow(rows [][]interface{}, dataStartLine uint) erro
 		if err != nil {
 			return fmt.Errorf("JoinCellName失败: %s-%d-%+v", letter, index, err)
 		}
-		if err = er.file.SetSheetRow(er.curSheetName, rowAddr, &row); err != nil {
+		if err = er.file.SetSheetRow(er.curSheet.sheetName, rowAddr, &row); err != nil {
 			return fmt.Errorf("SetSheetRow失败: %+v", err)
 		}
 	}
@@ -168,7 +168,7 @@ func (er *Exporter) handleDataRow(rows [][]interface{}, dataStartLine uint) erro
 }
 
 func (er *Exporter) handleData(rows [][]*RowData, dataStartLine uint) error {
-	curSheet, err := er.GetSheetInfo(er.curSheetName)
+	curSheet, err := er.GetCurSheetInfo()
 	if err != nil {
 		return err
 	}
@@ -182,19 +182,19 @@ func (er *Exporter) handleData(rows [][]*RowData, dataStartLine uint) error {
 			rowAddr, subErr := excelize.JoinCellName(letter, index)
 			switch info.ValueType {
 			case ValueCellString: // 字符串
-				subErr = er.file.SetCellStr(er.curSheetName, rowAddr, tool.Any2String(info.Value))
+				subErr = er.file.SetCellStr(curSheet.sheetName, rowAddr, tool.Any2String(info.Value))
 				if subErr != nil {
 					return fmt.Errorf("SetCellStr失败: %s-%d-%+v", letter, index, subErr)
 				}
 			default:
-				subErr = er.file.SetCellValue(er.curSheetName, rowAddr, info.Value)
+				subErr = er.file.SetCellValue(curSheet.sheetName, rowAddr, info.Value)
 				if subErr != nil {
 					return fmt.Errorf("SetCellValue失败: %s-%d-%+v", letter, index, subErr)
 				}
 			}
 			// 优先列样式，字段单独样式次之
 			if columStyleId <= 0 && info.StyleId > 0 {
-				if subErr = er.file.SetCellStyle(er.curSheetName, rowAddr, rowAddr, info.StyleId); subErr != nil {
+				if subErr = er.file.SetCellStyle(curSheet.sheetName, rowAddr, rowAddr, info.StyleId); subErr != nil {
 					return fmt.Errorf("SetCellStyle失败: %s-%d-%+v", letter, index, subErr)
 				}
 			}

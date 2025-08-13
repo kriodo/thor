@@ -21,13 +21,12 @@ type SheetInfo struct {
 	columnStyle    map[string]int               // 列的单元格样式
 }
 
-// GetSheetInfo 获取sheet数据
-func (er *Exporter) GetSheetInfo(sheetName string) (*SheetInfo, error) {
-	info, exi := er.sheet[sheetName]
-	if !exi {
-		return nil, fmt.Errorf(sheetName + "无数据")
+// GetCurSheetInfo 获取当前sheet数据
+func (er *Exporter) GetCurSheetInfo() (*SheetInfo, error) {
+	if er.curSheet == nil || er.curSheet.sheetName == "" {
+		return nil, fmt.Errorf("当前sheet无数据")
 	}
-	return info, nil
+	return er.curSheet, nil
 }
 
 // AddSheet 增加一个sheet
@@ -35,25 +34,27 @@ func (er *Exporter) AddSheet(sheetName string) (*Exporter, error) {
 	if er.err != nil {
 		return er, nil
 	}
+	if tool.InStringArray(sheetName, er.file.GetSheetList()) {
+		return nil, fmt.Errorf(sheetName + "已存在，无法创建")
+	}
 	err := tool.CheckSheetName(sheetName)
 	if err != nil {
 		return nil, err
-	}
-	if tool.InStringArray(sheetName, er.file.GetSheetList()) {
-		return nil, fmt.Errorf(sheetName + "已存在，无法创建")
 	}
 	_, err = er.file.NewSheet(sheetName)
 	if err != nil {
 		return er, fmt.Errorf("创建sheet失败: %s %+v", sheetName, err)
 	}
-	er.curSheetName = sheetName
-	er.initSheetInfo()
+	er.initSheetInfo(sheetName)
 	return er, nil
 }
 
 // CutSheet 切换sheet
 func (er *Exporter) CutSheet(sheetName string) *Exporter {
-	er.curSheetName = sheetName
+	if _, exi := er.sheet[sheetName]; !exi {
+		er.err = fmt.Errorf("%s不存在", sheetName)
+	}
+	er.curSheet = er.sheet[sheetName]
 	return er
 }
 
@@ -62,7 +63,7 @@ func (er *Exporter) GetFieldXIndex(filedKey string) string {
 	if er.err != nil {
 		return ""
 	}
-	curSheet, err := er.GetSheetInfo(er.curSheetName)
+	curSheet, err := er.GetCurSheetInfo()
 	if err != nil {
 		er.err = err
 		return ""
@@ -75,11 +76,11 @@ func (er *Exporter) GetFieldXIndex(filedKey string) string {
 }
 
 // GetDataStartY 获取数据的Y起始坐标
-func (er *Exporter) GetDataStartY(filedKey string) uint {
+func (er *Exporter) GetDataStartY() uint {
 	if er.err != nil {
 		return 0
 	}
-	curSheet, err := er.GetSheetInfo(er.curSheetName)
+	curSheet, err := er.GetCurSheetInfo()
 	if err != nil {
 		er.err = err
 		return 0
@@ -106,9 +107,9 @@ func (si *SheetInfo) getDataStartY() uint {
 }
 
 // 初始化一个sheet
-func (er *Exporter) initSheetInfo() {
-	er.sheet[er.curSheetName] = &SheetInfo{
-		sheetName:      er.curSheetName,
+func (er *Exporter) initSheetInfo(sheetName string) {
+	sheet := &SheetInfo{
+		sheetName:      sheetName,
 		headerTree:     nil,
 		fieldInfoList:  nil,
 		fieldInfoMap:   make(map[string]*header.FieldInfo),
@@ -119,4 +120,6 @@ func (er *Exporter) initSheetInfo() {
 		headerFieldLen: 0,
 		columnStyle:    nil,
 	}
+	er.curSheet = sheet
+	er.sheet[sheetName] = sheet
 }

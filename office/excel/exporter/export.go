@@ -10,7 +10,7 @@ import (
 
 // Exporter 导出
 type Exporter struct {
-	curSheetName string                // 当前sheet名称
+	curSheet     *SheetInfo            // 当前sheet
 	file         *excelize.File        // 文件
 	sheet        map[string]*SheetInfo // sheet数据
 	err          error                 // 错误
@@ -53,8 +53,8 @@ func NewExporterWithFile(file *excelize.File) (*Exporter, error) {
 	if sheetLen == 0 {
 		return nil, fmt.Errorf("表格无sheet数据")
 	}
+	sheetName := file.GetSheetList()[0]
 	er := &Exporter{
-		curSheetName: file.GetSheetList()[0],
 		file:         file,
 		sheet:        make(map[string]*SheetInfo, 10),
 		err:          nil,
@@ -69,7 +69,7 @@ func NewExporterWithFile(file *excelize.File) (*Exporter, error) {
 		return er, er.err
 	}
 	// 初始化sheet
-	er.initSheetInfo()
+	er.initSheetInfo(sheetName)
 	return er, nil
 }
 

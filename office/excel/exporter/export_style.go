@@ -12,7 +12,7 @@ func (er *Exporter) SetStyle(headerStyle *header.Style) *Exporter {
 	if headerStyle == nil {
 		return er
 	}
-	sheetInfo, err := er.GetSheetInfo(er.curSheetName)
+	sheetInfo, err := er.GetCurSheetInfo()
 	if err != nil {
 		er.err = err
 		return er
@@ -55,7 +55,7 @@ func (er *Exporter) SetColStyle(columnStyle map[string]int) *Exporter {
 	if er.err != nil {
 		return er
 	}
-	curSheet, err := er.GetSheetInfo(er.curSheetName)
+	curSheet, err := er.GetCurSheetInfo()
 	if err != nil {
 		er.err = err
 		return er
@@ -72,7 +72,7 @@ func (er *Exporter) SetStringStyle(fieldKeys []string, startLine, endLine uint) 
 	if er.err != nil {
 		return er.err
 	}
-	curSheet, err := er.GetSheetInfo(er.curSheetName)
+	curSheet, err := er.GetCurSheetInfo()
 	if err != nil {
 		return err
 	}
@@ -94,7 +94,7 @@ func (er *Exporter) SetStringStyle(fieldKeys []string, startLine, endLine uint) 
 	for _, key := range fieldKeys {
 		if val, exi := curSheet.fieldInfoMap[key]; exi {
 			keyAbc := tool.IndexToLetter(val.XIndex)
-			err = er.GetFile().SetCellStyle(er.curSheetName, fmt.Sprintf("%s%d", keyAbc, startLine), fmt.Sprintf("%s%d", keyAbc, endLine), strStyleId)
+			err = er.GetFile().SetCellStyle(curSheet.sheetName, fmt.Sprintf("%s%d", keyAbc, startLine), fmt.Sprintf("%s%d", keyAbc, endLine), strStyleId)
 			if err != nil {
 				return fmt.Errorf("SetCellStyle失败: %s %+v", keyAbc, err)
 			}
@@ -104,23 +104,22 @@ func (er *Exporter) SetStringStyle(fieldKeys []string, startLine, endLine uint) 
 }
 
 // 根据表头进行设置表头合适的宽度
-func (er *Exporter) setHeaderWidth(tree []*header.Header, xIndex uint) (uint, error) {
-	var err error
-	for _, head := range tree {
-		if len(head.Children) == 0 {
-			x := tool.IndexToLetter(xIndex)
-			// TODO 可以优化
-			w := float64(tool.LenChar(head.Title))*1.7 + 8
-			err = er.file.SetColWidth(er.curSheetName, x, x, w)
-			if err != nil {
-				return 0, err
-			}
-			xIndex = xIndex + 1
-		} else {
-			return er.setHeaderWidth(head.Children, xIndex)
+func (er *Exporter) setHeaderWidth() error {
+	if er.err != nil {
+		return er.err
+	}
+	curSheet, err := er.GetCurSheetInfo()
+	if err != nil {
+		return err
+	}
+	for _, v := range curSheet.fieldInfoList {
+		index := tool.IndexToLetter(v.XIndex)
+		err = er.file.SetColWidth(curSheet.sheetName, index, index, v.Width)
+		if err != nil {
+			return err
 		}
 	}
-	return xIndex, nil
+	return nil
 }
 
 // 设置表头样式

@@ -50,12 +50,12 @@ func TestNewImportProcessor(t *testing.T) {
 	//if err != nil {
 	//	return
 	//}
-	headers = append(headers, &header.Header{Id: 1, Pid: 0, Title: "子项目名称", FieldKey: "suitem_name", MustExi: true})
-	headers = append(headers, &header.Header{Id: 2, Pid: 0, Title: "养老", FieldKey: "old", MustExi: true})
-	headers = append(headers, &header.Header{Id: 3, Pid: 2, Title: "企业", FieldKey: "old_company", MustExi: true})
-	headers = append(headers, &header.Header{Id: 4, Pid: 2, Title: "个人", FieldKey: "old_person", MustExi: true})
-	headers = append(headers, &header.Header{Id: 5, Pid: 3, Title: "基数", FieldKey: "old_company_base", MustExi: true})
-	headers = append(headers, &header.Header{Id: 6, Pid: 4, Title: "基数", FieldKey: "old_person_base", MustExi: true})
+	headers = append(headers, header.Header{Id: 1, Pid: 0, Title: "子项目名称", FieldKey: "suitem_name", MustExi: true})
+	headers = append(headers, header.Header{Id: 2, Pid: 0, Title: "养老", FieldKey: "old", MustExi: true})
+	headers = append(headers, header.Header{Id: 3, Pid: 2, Title: "企业", FieldKey: "old_company", MustExi: true})
+	headers = append(headers, header.Header{Id: 4, Pid: 2, Title: "个人", FieldKey: "old_person", MustExi: true})
+	headers = append(headers, header.Header{Id: 5, Pid: 3, Title: "基数", FieldKey: "old_company_base", MustExi: true})
+	headers = append(headers, header.Header{Id: 6, Pid: 4, Title: "基数", FieldKey: "old_person_base", MustExi: true})
 	err = ipv2.SetList(headers).SetStartLine(1, 5).Run()
 	if err != nil {
 		t.Log(err)

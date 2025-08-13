@@ -29,7 +29,7 @@ package excel
 //}
 //
 //type ExportSetting struct {
-//	NowSheetName string    // 工作表名称
+//	curSheetName string    // 工作表名称
 //	FileName  string    // 文件名称
 //	Line      int       // 纵坐标行号
 //	Height    int       // 行高
@@ -40,7 +40,7 @@ package excel
 //type CustomHeader struct {
 //	Header  []*Header  // 表头
 //	RowData [][]string // 数据
-//	File    *excelize.File
+//	GetFile    *excelize.GetFile
 //	eopts   exportOption
 //}
 //
@@ -55,7 +55,7 @@ package excel
 //	ch := &CustomHeader{
 //		Header:  h,
 //		RowData: rd,
-//		File:    excelize.NewFile(),
+//		GetFile:    excelize.NewFile(),
 //		eopts:   defaultExportOptions(),
 //	}
 //	// 循环调用opts
@@ -71,7 +71,7 @@ package excel
 //	Line      int
 //	Height    float64
 //	FileName  string
-//	NowSheetName string
+//	curSheetName string
 //}
 //
 //type ExportOption interface {
@@ -98,7 +98,7 @@ package excel
 //		Line:      header.DefaultLine,
 //		Height:    header.DefaultHeaderHeight,
 //		FileName:  tool.GetUUID() + "." + header.DefaultExcelType,
-//		NowSheetName: header.DefaultSheetName,
+//		curSheetName: header.DefaultSheetName,
 //	}
 //}
 //
@@ -119,7 +119,7 @@ package excel
 //// 设置工作表名称
 //func WithHeaderSheetName(sheetName string) ExportOption {
 //	return newFuncOption(func(option *exportOption) {
-//		option.NowSheetName = sheetName
+//		option.curSheetName = sheetName
 //	})
 //}
 //
@@ -132,13 +132,13 @@ package excel
 //
 //func (ch *CustomHeader) SetHeader() error {
 //	// 创建一个工作表
-//	index, err := ch.File.NewSheet(ch.eopts.NowSheetName)
+//	index, err := ch.GetFile.NewSheet(ch.eopts.curSheetName)
 //	if err != nil {
 //		return errors.New("创建工作表失败")
 //	}
 //
 //	// 设置工作簿的默认工作表
-//	ch.File.SetActiveSheet(index)
+//	ch.GetFile.SetActiveSheet(index)
 //
 //	// 给表头增加坐标
 //	IndexLetter(ch.Header)
@@ -146,14 +146,14 @@ package excel
 //	// 设置表头单元格
 //	length := len(ch.Header)
 //	for _, header := range ch.Header {
-//		err := ch.File.SetCellValue(ch.eopts.NowSheetName, fmt.Sprintf("%s%d", header.Abscissa, ch.eopts.Line), header.Name)
+//		err := ch.GetFile.SetCellValue(ch.eopts.curSheetName, fmt.Sprintf("%s%d", header.Abscissa, ch.eopts.Line), header.Name)
 //		if err != nil {
 //			return err
 //		}
 //	}
 //
 //	// 设置行高
-//	err = ch.File.SetRowHeight(ch.eopts.NowSheetName, ch.eopts.Line, ch.eopts.Height)
+//	err = ch.GetFile.SetRowHeight(ch.eopts.curSheetName, ch.eopts.Line, ch.eopts.Height)
 //	if err != nil {
 //		return errors.New("设置表头行高失败")
 //	}
@@ -166,7 +166,7 @@ package excel
 //		{Type: "bottom", Style: 2, Color: "#cccccc"},
 //	}
 //	// 定义标题行单元格样式
-//	headerStyle, err := ch.File.NewStyle(&excelize.Style{
+//	headerStyle, err := ch.GetFile.NewStyle(&excelize.Style{
 //		Border: border,
 //		Fill: excelize.Fill{
 //			Type:    "pattern",
@@ -196,7 +196,7 @@ package excel
 //	}
 //
 //	// 为标题行设置样式
-//	err = ch.File.SetCellStyle(ch.eopts.NowSheetName, fmt.Sprintf("%s%d", "A", ch.eopts.Line), fmt.Sprintf("%s%d", ch.Header[length-1].Abscissa, ch.eopts.Line), headerStyle)
+//	err = ch.GetFile.SetCellStyle(ch.eopts.curSheetName, fmt.Sprintf("%s%d", "A", ch.eopts.Line), fmt.Sprintf("%s%d", ch.Header[length-1].Abscissa, ch.eopts.Line), headerStyle)
 //	if err != nil {
 //		return errors.New("设置单元格样式错误")
 //	}

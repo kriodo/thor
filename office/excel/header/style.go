@@ -18,6 +18,6 @@ func GetExportDefaultStyle() *Style {
 		FontFamily:  "微软雅黑",
 		FontSize:    11,
 		BorderColor: "000000",
-		FillColor:   "b4c7e7",
+		FillColor:   "DBE2F6",
 	}
 }

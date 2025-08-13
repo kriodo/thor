@@ -29,9 +29,9 @@ package importer
 //	Context                 context.Context // 上下文
 //	MaxErrNum               int             // 最大错误数量
 //	MaxRowNum               int             // 最大数据量
-//	NowSheetName               string          // 工作表名称
-//	TempHeaderFile          *excelize.File  // 模板file
-//	File                    *excelize.File  // 上传文件file [*必填]
+//	curSheetName               string          // 工作表名称
+//	TempHeaderFile          *excelize.GetFile  // 模板file
+//	GetFile                    *excelize.GetFile  // 上传文件file [*必填]
 //	IsComplexHeader         bool            // 是否复杂表头（复杂表头必填true）
 //	NotVerifyHeader         bool            // 不验证表头
 //	IsFirstSheetName        bool            // 是否默认直接使用第一个sheet
@@ -53,8 +53,8 @@ package importer
 //	context                 context.Context // 上下文
 //	headerLength            int             // 表头层数
 //	rowStartLine            int             // 数据起始行号
-//	tempHeaderFile          *excelize.File  // 模板文件file
-//	file                    *excelize.File  // 上传文件file
+//	tempHeaderFile          *excelize.GetFile  // 模板文件file
+//	file                    *excelize.GetFile  // 上传文件file
 //	isFirstSheetName        bool            // 是否默认直接使用第一个sheet
 //
 //	// parse content
@@ -77,21 +77,21 @@ package importer
 //		st.MaxErrNum = constant.MaxErrNum
 //	}
 //	// 如果读取模板文件，并且没有设置sheet名称，并且指定第一个sheet，兼容处理【取第一个名称'因为第一个名可能不是Sheet1'】
-//	if st.IsFirstSheetName && st.TempHeaderFile != nil && st.NowSheetName == "" {
+//	if st.IsFirstSheetName && st.TempHeaderFile != nil && st.curSheetName == "" {
 //		sheetNameList := st.TempHeaderFile.GetSheetList()
 //		if len(sheetNameList) > 0 {
-//			st.NowSheetName = sheetNameList[0]
+//			st.curSheetName = sheetNameList[0]
 //		}
 //	}
-//	if st.NowSheetName == "" {
-//		st.NowSheetName = constant.DefaultSheetName
+//	if st.curSheetName == "" {
+//		st.curSheetName = constant.DefaultSheetName
 //	}
 //
 //	var tempHeader [][]string
 //	// 获取模板表头
 //	if st.TempHeaderFile != nil {
 //		var err error
-//		tempHeader, err = tool.GetTempHeader(st.TempHeaderFile, st.NowSheetName)
+//		tempHeader, err = tool.GetTempHeader(st.TempHeaderFile, st.curSheetName)
 //		if err != nil {
 //			return nil, err
 //		}
@@ -106,14 +106,14 @@ package importer
 //		tempHeader:              tempHeader,
 //		maxErrNum:               st.MaxErrNum,
 //		maxRowNum:               st.MaxRowNum,
-//		sheetName:               st.NowSheetName,
+//		sheetName:               st.curSheetName,
 //		openValidRow:            st.OpenValidRow,
 //		openValidRowWithContext: st.OpenValidRowWithContext,
 //		context:                 st.Context,
 //		headerLength:            len(tempHeader),
 //		rowStartLine:            len(tempHeader),
 //		tempHeaderFile:          st.TempHeaderFile,
-//		file:                    st.File,
+//		file:                    st.GetFile,
 //		isFirstSheetName:        st.IsFirstSheetName,
 //		fieldMapping:            make(map[string]map[string]string),
 //		noMapping:               st.IsComplexHeader,

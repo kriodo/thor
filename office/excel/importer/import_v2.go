@@ -105,12 +105,12 @@ func (ipv2 *ImportProcessorV2) SetTree(tree []*header.Header) *ImportProcessorV2
 // SetList 设置list数据 [此模式id、pid必须填写]
 func (ipv2 *ImportProcessorV2) SetList(headers []*header.Header) *ImportProcessorV2 {
 	ipv2.clear()
-	err := header.Validation(headers)
+	err := header.checkHeaderId(headers)
 	if err != nil {
 		ipv2.err = err
 		return ipv2
 	}
-	tree := header.List2Tree(headers, 0)
+	tree := header.ListToTree(headers, 0)
 	ipv2.verifyHeaderMap = header.FormatTree(tree, 1, nil)
 	ipv2.tempHeader = tree
 	ipv2.headerLength = header.MaxLevel(tree, 1)

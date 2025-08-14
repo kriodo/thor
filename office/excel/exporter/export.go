@@ -10,7 +10,7 @@ import (
 
 // Exporter 导出
 type Exporter struct {
-	curSheet     *SheetInfo            // 当前sheet
+	cur          *SheetInfo            // 当前sheet
 	file         *excelize.File        // 文件
 	sheet        map[string]*SheetInfo // sheet数据
 	err          error                 // 错误

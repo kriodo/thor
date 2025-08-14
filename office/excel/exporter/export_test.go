@@ -21,7 +21,7 @@ func TestExporter(t *testing.T) {
 	// 设置表头从第3行开始
 	export.SetHeaderStartY(3)
 	// tree结构的表头
-	treeHeader := []*header.Header{
+	headers1 := []*header.Header{
 		{Title: "姓名", FieldKey: "user_name"},
 		{Title: "户籍", FieldKey: "household_registration"},
 		{Title: "户口所在城市", FieldKey: "household_registration_city"},
@@ -43,7 +43,7 @@ func TestExporter(t *testing.T) {
 			}}}},
 		{Title: "备注", FieldKey: "remark"},
 	}
-	err = export.SetTree(treeHeader).Error()
+	err = export.SetTree(headers1).Error()
 	if err != nil {
 		t.Log(err)
 		return
@@ -73,35 +73,75 @@ func TestExporter(t *testing.T) {
 		t.Log(err)
 		return
 	}
+	// 设置数据
+	var data1 [][]*Data
+	data1 = append(data1, []*Data{
+		{Val: "张三"},
+		{Val: "安徽省"},
+		{Val: "安庆市"},
+		{Val: "北京市"},
+		{Val: "北京吊炸天集团"},
+		{Val: "1000"},
+		{Val: "10%"},
+		{Val: "1001"},
+		{Val: "3%"},
+		{Val: "1000"},
+		{Val: "4%"},
+		{Val: "1001"},
+		{Val: "2%"},
+		{Val: "牛逼轰轰！"},
+	})
+	data1 = append(data1, []*Data{
+		{Val: "李四"},
+		{Val: "河北省"},
+		{Val: "廊坊市"},
+		{Val: "上海市"},
+		{Val: "上海摸鱼公司"},
+		{Val: "299"},
+		{Val: "10%"},
+		{Val: "380"},
+		{Val: "9%"},
+		{Val: "911"},
+		{Val: "7%"},
+		{Val: "699"},
+		{Val: "6%"},
+		{Val: "这是一个备注？"},
+	})
+	err = export.SetDataBySlice(data1).Error()
+	if err != nil {
+		t.Log(err)
+		return
+	}
+
 	export, err = export.AddSheet("测试-2")
 	if err != nil {
 		t.Log(err)
 		return
 	}
 	// list表头
-	var listHeaders []*header.Header
-	listHeaders = append(listHeaders, &header.Header{Id: 101, Pid: 0, Title: "子项目名称", FieldKey: "subitem_name"})
-	listHeaders = append(listHeaders, &header.Header{Id: 102, Pid: 0, Title: "姓名", Weight: 1, FieldKey: "name"})
-	listHeaders = append(listHeaders, &header.Header{Id: 103, Pid: 0, Title: "证件号", FieldKey: "id_card"})
-	listHeaders = append(listHeaders, &header.Header{Id: 104, Pid: 0, Title: "工作城市", FieldKey: "work_city"})
-	listHeaders = append(listHeaders, &header.Header{Id: 105, Pid: 0, Title: "调整前", FieldKey: "before"})
-	listHeaders = append(listHeaders, &header.Header{Id: 1001, Pid: 105, Title: "养老", FieldKey: "before_old_age"})
-	listHeaders = append(listHeaders, &header.Header{Id: 10001, Pid: 1001, Title: "企业", FieldKey: "before_old_age_company"})
-	listHeaders = append(listHeaders, &header.Header{Id: 100001, Pid: 10001, Title: "企业基数", FieldKey: "before_old_age_company_base"})
-	listHeaders = append(listHeaders, &header.Header{Id: 100002, Pid: 10001, Title: "企业比例", Weight: 1, FieldKey: "before_old_age_company_rate"})
-	listHeaders = append(listHeaders, &header.Header{Id: 10002, Pid: 1001, Title: "个人", FieldKey: "before_old_age_personnel"})
-	listHeaders = append(listHeaders, &header.Header{Id: 100003, Pid: 10002, Title: "个人基数", FieldKey: "before_old_age_personnel_base"})
-	listHeaders = append(listHeaders, &header.Header{Id: 100004, Pid: 10002, Title: "个人比例", FieldKey: "before_old_age_personnel_rate"})
-	listHeaders = append(listHeaders, &header.Header{Id: 106, Pid: 0, Title: "调整后", FieldKey: "after"})
-	listHeaders = append(listHeaders, &header.Header{Id: 1002, Pid: 106, Title: "养老", FieldKey: "after_old_age"})
-	listHeaders = append(listHeaders, &header.Header{Id: 10003, Pid: 1002, Title: "企业", FieldKey: "after_old_age_company"})
-	listHeaders = append(listHeaders, &header.Header{Id: 100005, Pid: 10003, Title: "企业基数", FieldKey: "after_old_age_company_base"})
-	listHeaders = append(listHeaders, &header.Header{Id: 100006, Pid: 10003, Title: "企业比例", FieldKey: "after_old_age_company_rate"})
-	listHeaders = append(listHeaders, &header.Header{Id: 10004, Pid: 1002, Title: "个人", FieldKey: "after_old_age_personnel"})
-	listHeaders = append(listHeaders, &header.Header{Id: 100007, Pid: 10004, Title: "个人基数", FieldKey: "after_old_age_personnel_base"})
-	listHeaders = append(listHeaders, &header.Header{Id: 100008, Pid: 10004, Title: "个人比例", FieldKey: "after_old_age_personnel_rate"})
-	listHeaders = append(listHeaders, &header.Header{Id: 107, Pid: 0, Title: "备注", FieldKey: "remark"})
-	export.SetListById(listHeaders)
+	var headers2 []*header.Header
+	headers2 = append(headers2, &header.Header{Id: 101, Pid: 0, Title: "子项目名称", FieldKey: "subitem_name"})
+	headers2 = append(headers2, &header.Header{Id: 102, Pid: 0, Title: "姓名", Weight: 1, FieldKey: "name"})
+	headers2 = append(headers2, &header.Header{Id: 103, Pid: 0, Title: "证件号", FieldKey: "id_card"})
+	headers2 = append(headers2, &header.Header{Id: 104, Pid: 0, Title: "工作城市", FieldKey: "work_city"})
+	headers2 = append(headers2, &header.Header{Id: 105, Pid: 0, Title: "调整前", FieldKey: "before"})
+	headers2 = append(headers2, &header.Header{Id: 1001, Pid: 105, Title: "养老", FieldKey: "before_old_age"})
+	headers2 = append(headers2, &header.Header{Id: 10001, Pid: 1001, Title: "企业", FieldKey: "before_old_age_company"})
+	headers2 = append(headers2, &header.Header{Id: 100001, Pid: 10001, Title: "企业基数", FieldKey: "before_old_age_company_base"})
+	headers2 = append(headers2, &header.Header{Id: 100002, Pid: 10001, Title: "企业比例", Weight: 1, FieldKey: "before_old_age_company_rate"})
+	headers2 = append(headers2, &header.Header{Id: 10002, Pid: 1001, Title: "个人", FieldKey: "before_old_age_personnel"})
+	headers2 = append(headers2, &header.Header{Id: 100003, Pid: 10002, Title: "个人基数", FieldKey: "before_old_age_personnel_base"})
+	headers2 = append(headers2, &header.Header{Id: 100004, Pid: 10002, Title: "个人比例", FieldKey: "before_old_age_personnel_rate"})
+	headers2 = append(headers2, &header.Header{Id: 106, Pid: 0, Title: "调整后", FieldKey: "after"})
+	headers2 = append(headers2, &header.Header{Id: 1002, Pid: 106, Title: "养老", FieldKey: "after_old_age"})
+	headers2 = append(headers2, &header.Header{Id: 10003, Pid: 1002, Title: "企业", FieldKey: "after_old_age_company"})
+	headers2 = append(headers2, &header.Header{Id: 100005, Pid: 10003, Title: "企业基数", FieldKey: "after_old_age_company_base"})
+	headers2 = append(headers2, &header.Header{Id: 100006, Pid: 10003, Title: "企业比例", FieldKey: "after_old_age_company_rate"})
+	headers2 = append(headers2, &header.Header{Id: 10004, Pid: 1002, Title: "个人", FieldKey: "after_old_age_personnel"})
+	headers2 = append(headers2, &header.Header{Id: 100007, Pid: 10004, Title: "个人基数", FieldKey: "after_old_age_personnel_base"})
+	headers2 = append(headers2, &header.Header{Id: 100008, Pid: 10004, Title: "个人比例", FieldKey: "after_old_age_personnel_rate"})
+	headers2 = append(headers2, &header.Header{Id: 107, Pid: 0, Title: "备注", FieldKey: "remark"})
+	export.SetListById(headers2)
 	// 设置下拉框
 	err = export.SetDrop([]*DropInfo{
 		{
@@ -122,35 +162,82 @@ func TestExporter(t *testing.T) {
 		t.Log(err)
 		return
 	}
-
+	data2 := make([]map[string]*Data, 0, 100)
+	data2 = append(data2, map[string]*Data{
+		"subitem_name":                  GetData(SetVal("北京小米")),
+		"name":                          GetData(SetVal("张三")),
+		"id_card":                       GetData(SetVal("420101198503101724")),
+		"work_city":                     GetData(SetVal("北京市")),
+		"before_old_age_company_base":   GetData(SetVal("4991")),
+		"before_old_age_personnel_rate": GetData(SetVal("1%")),
+	})
+	data2 = append(data2, map[string]*Data{
+		"subitem_name": GetData(SetVal("阿里巴巴")),
+		"name":         GetData(SetVal("李四")),
+		"id_card":      GetData(SetVal("420101198308264421")),
+		"work_city":    GetData(SetVal("上海市")),
+	})
+	data2 = append(data2, map[string]*Data{
+		"subitem_name":                 GetData(SetVal("腾讯")),
+		"name":                         GetData(SetVal("王二")),
+		"id_card":                      GetData(SetVal("420101196402140530")),
+		"work_city":                    GetData(SetVal("深圳市")),
+		"remark":                       GetData(SetVal("这是一个备注！！！")),
+		"after_old_age_company_base":   GetData(SetVal("1991")),
+		"after_old_age_personnel_rate": GetData(SetVal("9%")),
+		"remark1":                      GetData(SetVal("这是一个备注")), // 测试没有的字段key试试
+	})
+	err = export.SetDataByMap(data2).Error()
+	if err != nil {
+		t.Log(err)
+		return
+	}
 	export, err = export.AddSheet("测试-3")
 	if err != nil {
 		t.Log(err)
 		return
 	}
 	// list表头
-	var listHeader2s []*header.Header
-	listHeader2s = append(listHeader2s, &header.Header{Pkey: "", Title: "子项目名称", FieldKey: "subitem_name"})
-	listHeader2s = append(listHeader2s, &header.Header{Pkey: "", Title: "姓名", FieldKey: "name"})
-	listHeader2s = append(listHeader2s, &header.Header{Pkey: "", Title: "证件号", FieldKey: "id_card"})
-	listHeader2s = append(listHeader2s, &header.Header{Pkey: "", Title: "调整前", FieldKey: "before"})
-	listHeader2s = append(listHeader2s, &header.Header{Pkey: "before", Title: "养老", FieldKey: "before_old_age"})
-	listHeader2s = append(listHeader2s, &header.Header{Pkey: "before_old_age", Title: "企业", FieldKey: "before_old_age_company"})
-	listHeader2s = append(listHeader2s, &header.Header{Pkey: "before_old_age_company", Title: "企业基数", FieldKey: "before_old_age_company_base"})
-	listHeader2s = append(listHeader2s, &header.Header{Pkey: "before_old_age_company", Title: "企业比例", Weight: 1, FieldKey: "before_old_age_company_rate"})
-	listHeader2s = append(listHeader2s, &header.Header{Pkey: "before_old_age", Title: "个人", FieldKey: "before_old_age_personnel"})
-	listHeader2s = append(listHeader2s, &header.Header{Pkey: "before_old_age_personnel", Title: "个人基数", FieldKey: "before_old_age_personnel_base"})
-	listHeader2s = append(listHeader2s, &header.Header{Pkey: "before_old_age_personnel", Title: "个人比例", FieldKey: "before_old_age_personnel_rate"})
-	listHeader2s = append(listHeader2s, &header.Header{Pkey: "", Title: "调整后", FieldKey: "after"})
-	listHeader2s = append(listHeader2s, &header.Header{Pkey: "after", Title: "养老", FieldKey: "after_old_age"})
-	listHeader2s = append(listHeader2s, &header.Header{Pkey: "after_old_age", Title: "企业", FieldKey: "after_old_age_company"})
-	listHeader2s = append(listHeader2s, &header.Header{Pkey: "after_old_age_company", Title: "企业基数", FieldKey: "after_old_age_company_base"})
-	listHeader2s = append(listHeader2s, &header.Header{Pkey: "after_old_age_company", Title: "企业比例", FieldKey: "after_old_age_company_rate"})
-	listHeader2s = append(listHeader2s, &header.Header{Pkey: "after_old_age", Title: "个人", FieldKey: "after_old_age_personnel"})
-	listHeader2s = append(listHeader2s, &header.Header{Pkey: "after_old_age_personnel", Title: "个人基数", FieldKey: "after_old_age_personnel_base"})
-	listHeader2s = append(listHeader2s, &header.Header{Pkey: "after_old_age_personnel", Title: "个人比例", FieldKey: "after_old_age_personnel_rate"})
-	listHeader2s = append(listHeader2s, &header.Header{Pkey: "", Title: "备注", FieldKey: "remark"})
-	export.SetListById(listHeaders)
+	var headers3 []*header.Header
+	headers3 = append(headers3, &header.Header{Pkey: "", Title: "基本信息", FieldKey: "user_info"})
+	headers3 = append(headers3, &header.Header{Pkey: "user_info", Title: "姓名", FieldKey: "name"})
+	headers3 = append(headers3, &header.Header{Pkey: "user_info", Title: "证件号", FieldKey: "id_card"})
+	headers3 = append(headers3, &header.Header{Pkey: "", Title: "子项目名称", FieldKey: "subitem_name"})
+	headers3 = append(headers3, &header.Header{Pkey: "", Title: "调整前", FieldKey: "before"})
+	headers3 = append(headers3, &header.Header{Pkey: "before", Title: "养老", FieldKey: "before_old_age"})
+	headers3 = append(headers3, &header.Header{Pkey: "before_old_age", Title: "企业", FieldKey: "before_old_age_company"})
+	headers3 = append(headers3, &header.Header{Pkey: "before_old_age_company", Title: "企业基数", FieldKey: "before_old_age_company_base"})
+	headers3 = append(headers3, &header.Header{Pkey: "before_old_age_company", Title: "企业比例", Weight: 1, FieldKey: "before_old_age_company_rate"})
+	headers3 = append(headers3, &header.Header{Pkey: "before_old_age", Title: "个人", FieldKey: "before_old_age_personnel"})
+	headers3 = append(headers3, &header.Header{Pkey: "before_old_age_personnel", Title: "个人基数", FieldKey: "before_old_age_personnel_base"})
+	headers3 = append(headers3, &header.Header{Pkey: "before_old_age_personnel", Title: "个人比例", FieldKey: "before_old_age_personnel_rate"})
+	headers3 = append(headers3, &header.Header{Pkey: "", Title: "调整后", FieldKey: "after"})
+	headers3 = append(headers3, &header.Header{Pkey: "after", Title: "养老", FieldKey: "after_old_age"})
+	headers3 = append(headers3, &header.Header{Pkey: "after_old_age", Title: "企业", FieldKey: "after_old_age_company"})
+	headers3 = append(headers3, &header.Header{Pkey: "after_old_age_company", Title: "企业基数", FieldKey: "after_old_age_company_base"})
+	headers3 = append(headers3, &header.Header{Pkey: "after_old_age_company", Title: "企业比例", FieldKey: "after_old_age_company_rate"})
+	headers3 = append(headers3, &header.Header{Pkey: "after_old_age", Title: "个人", FieldKey: "after_old_age_personnel"})
+	headers3 = append(headers3, &header.Header{Pkey: "after_old_age_personnel", Title: "个人基数", FieldKey: "after_old_age_personnel_base"})
+	headers3 = append(headers3, &header.Header{Pkey: "after_old_age_personnel", Title: "个人比例", FieldKey: "after_old_age_personnel_rate"})
+	headers3 = append(headers3, &header.Header{Pkey: "", Title: "备注", FieldKey: "remark"})
+	export.SetListByPkey(headers3)
+	var data3 []map[string]*Data
+	data3 = append(data3, map[string]*Data{
+		"name":    GetData(SetVal("乔峰"), SetValType(STRING), SetStyleId(0)),
+		"id_card": GetData(SetVal("420101199104264360"), SetValType(STRING)),
+		"remark":  GetData(SetVal("天龙八部"), SetValType(STRING)),
+	})
+	data3 = append(data3, map[string]*Data{
+		"name":    GetData(SetVal("慕容复"), SetValType(STRING), SetStyleId(0)),
+		"id_card": GetData(SetVal("420101198503101724"), SetValType(STRING)),
+		"remark":  GetData(SetVal("天龙八部"), SetValType(STRING)),
+	})
+
+	err = export.SetDataByMap(data3).Error()
+	if err != nil {
+		t.Log(err)
+		return
+	}
 	err = export.SaveAs(fileName)
 	if err != nil {
 		t.Log(err)

@@ -19,11 +19,11 @@ func (er *Exporter) SetTree(tree []*header.Header) *Exporter {
 	}
 	// 获取表头相关信息
 	curSheet.headerTree = tree
-	curSheet.fieldInfoList, er.err = header.FormatHeaderInfo(curSheet.headerTree, 1, curSheet.fieldInfoList)
+	curSheet.fieldInfos, er.err = header.FormatHeaderInfo(curSheet.headerTree, 1, curSheet.fieldInfos)
 	if er.err != nil {
 		return er
 	}
-	for i, v := range curSheet.fieldInfoList {
+	for i, v := range curSheet.fieldInfos {
 		index := uint(i) + curSheet.headerStartX
 		if v.YIndex > curSheet.headerMaxLevel {
 			curSheet.headerMaxLevel = v.YIndex
@@ -31,6 +31,7 @@ func (er *Exporter) SetTree(tree []*header.Header) *Exporter {
 		v.XIndex = index
 		curSheet.fieldInfoMap[v.Key] = v
 	}
+	curSheet.headerFieldLen = len(curSheet.fieldInfos)
 	// 处理表头
 	er.err = er.handleHeader(curSheet.headerTree, curSheet.headerStartX, curSheet.headerStartY)
 	if er.err != nil {
@@ -41,8 +42,8 @@ func (er *Exporter) SetTree(tree []*header.Header) *Exporter {
 	if er.err != nil {
 		return er
 	}
-	er.sheet[er.curSheet.sheetName] = curSheet
-	er.curSheet = curSheet
+	er.sheet[er.cur.sheetName] = curSheet
+	er.cur = curSheet
 	return er
 }
 
@@ -70,10 +71,6 @@ func (er *Exporter) SetListByPkey(headers []*header.Header) *Exporter {
 		id          int64
 	)
 	for _, head := range headers {
-		if head.Pkey == "" {
-			er.err = fmt.Errorf("PKEY不能为空: " + head.FieldKey)
-			return er
-		}
 		id++
 		head.Id = id
 		headerIdMap[head.FieldKey] = id

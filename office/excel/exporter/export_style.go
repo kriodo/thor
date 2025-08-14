@@ -50,9 +50,12 @@ func (er *Exporter) SetStyle(headerStyle *header.Style) *Exporter {
 	return er
 }
 
-// SetColStyle 设置列的单元格样式 [ 字段:StyleId ]
+// SetColStyle 设置列的单元格样式 [ 字段:styleId ]
 func (er *Exporter) SetColStyle(columnStyle map[string]int) *Exporter {
 	if er.err != nil {
+		return er
+	}
+	if len(columnStyle) == 0 {
 		return er
 	}
 	curSheet, err := er.GetCurSheetInfo()
@@ -60,7 +63,7 @@ func (er *Exporter) SetColStyle(columnStyle map[string]int) *Exporter {
 		er.err = err
 		return er
 	}
-	curSheet.columnStyle = columnStyle
+	curSheet.xStyle = columnStyle
 	return er
 }
 
@@ -112,7 +115,7 @@ func (er *Exporter) setHeaderWidth() error {
 	if err != nil {
 		return err
 	}
-	for _, v := range curSheet.fieldInfoList {
+	for _, v := range curSheet.fieldInfos {
 		index := tool.IndexToLetter(v.XIndex)
 		err = er.file.SetColWidth(curSheet.sheetName, index, index, v.Width)
 		if err != nil {

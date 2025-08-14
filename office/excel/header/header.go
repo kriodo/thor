@@ -33,17 +33,17 @@ type ExportAttr struct {
 type ImportAttr struct {
 	OtherTitle []string `json:"other_title,omitempty"` // [导入]其他名称：如果title匹配不上会根据此根据集合进行匹配(注意：不验证表头参数)
 	LikeTitle  string   `json:"like_title,omitempty"`  // [导入]模糊名称(只支持一级表头)：如果title匹配不上会根据此根据集合进行匹配(注意：不验证表头参数)
-	MustExi    bool     `json:"must_exi,omitempty"`    // [导入]验证是否存在
+	IsRequired bool     `json:"is_required,omitempty"` // [导入]验证是否存在
 }
 
 // FieldInfo 表头字段的信息
 type FieldInfo struct {
-	Key       string  `json:"key,omitempty"`        // 字段key
-	XIndex    uint    `json:"x_index,omitempty"`    // 字段所在X位置(从0开始)
-	YIndex    uint    `json:"y_index,omitempty"`    // 字段所在Y位置(从1开始)
-	LastLevel bool    `json:"last_level,omitempty"` // 是否最后一级字段
-	MustExi   bool    `json:"must_exi,omitempty"`   // 是否必填
-	Width     float64 `json:"width,omitempty"`      // 字段宽度
+	Key        string  `json:"key,omitempty"`         // 字段key
+	XIndex     uint    `json:"x_index,omitempty"`     // 字段所在X位置(从0开始)
+	YIndex     uint    `json:"y_index,omitempty"`     // 字段所在Y位置(从1开始)
+	IsLast     bool    `json:"is_last,omitempty"`     // 是否最后一级字段
+	IsRequired bool    `json:"is_required,omitempty"` // 是否必填
+	Width      float64 `json:"width,omitempty"`       // 字段宽度
 }
 
 func (h *Header) SetChildrenMaxLen(val uint) {
@@ -73,11 +73,11 @@ func FormatHeaderInfo(tree []*Header, level uint, fieldInfo []*FieldInfo) ([]*Fi
 		if childLen == 0 {
 			tree[i].isLast = true
 			fieldInfo = append(fieldInfo, &FieldInfo{
-				Key:       header.FieldKey,
-				YIndex:    level,
-				LastLevel: childLen == 0,
-				MustExi:   header.Import.MustExi,
-				Width:     CalHeaderTitleWidth(header.Title),
+				Key:        header.FieldKey,
+				YIndex:     level,
+				IsLast:     childLen == 0,
+				IsRequired: header.Import.IsRequired,
+				Width:      CalHeaderTitleWidth(header.Title),
 			})
 			continue
 		}

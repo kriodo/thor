@@ -6,18 +6,50 @@ import (
 	"github.com/xuri/excelize/v2"
 )
 
-type RowData struct {
-	key       string      // key
-	Value     interface{} // 值
-	StyleId   int         // 样式id
-	ValueType             // 值类型
+type Data struct {
+	Val     interface{} // 值
+	valType ValueType   // 值类型（*** 建议按照列进行赋值的类型 ***）
+	styleId int         // 样式id
+}
+
+type DataOption func(*Data)
+
+func GetData(opts ...DataOption) *Data {
+	// 默认值
+	opt := &Data{}
+	// 应用调用者传入的配置
+	for _, o := range opts {
+		o(opt)
+	}
+	return opt
+}
+
+func SetVal(val interface{}) DataOption {
+	return func(o *Data) {
+		o.Val = val
+	}
+}
+
+func SetValType(vt ValueType) DataOption {
+	return func(o *Data) {
+		o.valType = vt
+	}
+}
+
+func SetStyleId(styleId int) DataOption {
+	return func(o *Data) {
+		o.styleId = styleId
+	}
 }
 
 type ValueType int
 
 const (
-	ValueCellDefault ValueType = 0 //默认
-	ValueCellString  ValueType = 1 //字符串
+	DEFAULT ValueType = 0  // 默认
+	STRING  ValueType = 10 // 字符串
+	NUMBER  ValueType = 20 // 数字
+	INT     ValueType = 21 // 整数
+	FLOAT   ValueType = 22 // 浮点
 )
 
 // SetHeaderStartX 设置表头起始列（必须SetHeader之前操作）
@@ -32,7 +64,7 @@ func (er *Exporter) SetHeaderStartX(index uint) *Exporter {
 		return er
 	}
 	curSheet.headerStartX = index
-	er.sheet[er.curSheet.sheetName] = curSheet
+	er.sheet[er.cur.sheetName] = curSheet
 	return er
 }
 
@@ -51,7 +83,7 @@ func (er *Exporter) SetHeaderStartY(index uint) *Exporter {
 		index = 1
 	}
 	curSheet.headerStartY = index
-	er.sheet[er.curSheet.sheetName] = curSheet
+	er.sheet[er.cur.sheetName] = curSheet
 	return er
 }
 
@@ -69,12 +101,25 @@ func (er *Exporter) SetDataStartX(index uint) *Exporter {
 	if index <= 1 {
 		index = 1
 	}
-	er.sheet[er.curSheet.sheetName] = curSheet
+	er.sheet[er.cur.sheetName] = curSheet
 	return er
 }
 
-// SetDataByRow 设置顺序数据 [** 此模式数据需要按照顺序赋值，优点：快|缺点：顺序必须对齐 **]
-func (er *Exporter) SetDataByRow(rows [][]interface{}) *Exporter {
+// SetDataBySlice 设置顺序数据 [** 此模式数据需要按照顺序赋值，优点：快|缺点：顺序必须对齐 **]
+func (er *Exporter) SetDataBySlice(rows [][]*Data) *Exporter {
+	if er.err != nil {
+		return er
+	}
+	err := er.handleData(rows)
+	if err != nil {
+		er.err = err
+		return er
+	}
+	return er
+}
+
+// SetDataByMap 设置数据  [此模式只需要对应的key附上值即可]
+func (er *Exporter) SetDataByMap(dataMap []map[string]*Data) *Exporter {
 	if er.err != nil {
 		return er
 	}
@@ -83,30 +128,12 @@ func (er *Exporter) SetDataByRow(rows [][]interface{}) *Exporter {
 		er.err = err
 		return er
 	}
-	err = er.handleDataRow(rows, curSheet.GetDataStartX())
-	if err != nil {
-		er.err = err
-		return er
-	}
-	return er
-}
-
-// SetDataByMap 设置map数据 [此模式只需要对应的key附上值即可]
-func (er *Exporter) SetDataByMap(dataMap []map[string]interface{}) *Exporter {
-	if er.err != nil {
-		return er
-	}
-	curSheet, err := er.GetCurSheetInfo()
-	if err != nil {
-		er.err = err
-		return er
-	}
-	rows := make([][]interface{}, 0, len(dataMap))
+	rows := make([][]*Data, 0, len(dataMap))
 	for _, data := range dataMap {
-		row := make([]interface{}, curSheet.headerFieldLen)
+		row := make([]*Data, curSheet.headerFieldLen)
 		for key, val := range data {
 			if info, exi := curSheet.fieldInfoMap[key]; exi {
-				if info.XIndex > curSheet.headerFieldLen {
+				if int(info.XIndex) > curSheet.headerFieldLen {
 					er.err = fmt.Errorf("字段的索引错误: %s-%d", key, info.XIndex)
 					return er
 				}
@@ -115,36 +142,7 @@ func (er *Exporter) SetDataByMap(dataMap []map[string]interface{}) *Exporter {
 		}
 		rows = append(rows, row)
 	}
-	er.SetDataByRow(rows)
-	return er
-}
-
-// SetDataMapWithStyle 设置数据 + 设置样式 [此模式只需要对应的key附上值即可]
-func (er *Exporter) SetDataMapWithStyle(dataMap []map[string]*RowData) *Exporter {
-	if er.err != nil {
-		return er
-	}
-	curSheet, err := er.GetCurSheetInfo()
-	if err != nil {
-		er.err = err
-		return er
-	}
-	rows := make([][]*RowData, 0, len(dataMap))
-	for _, data := range dataMap {
-		row := make([]*RowData, curSheet.headerFieldLen)
-		for key, val := range data {
-			if info, exi := curSheet.fieldInfoMap[key]; exi {
-				if info.XIndex > curSheet.headerFieldLen {
-					er.err = fmt.Errorf("字段的索引错误: %s-%d", key, info.XIndex)
-					return er
-				}
-				val.key = key
-				row[info.XIndex] = val
-			}
-		}
-		rows = append(rows, row)
-	}
-	err = er.handleData(rows, curSheet.GetDataStartX())
+	err = er.handleData(rows)
 	if err != nil {
 		er.err = err
 		return er
@@ -152,54 +150,57 @@ func (er *Exporter) SetDataMapWithStyle(dataMap []map[string]*RowData) *Exporter
 	return er
 }
 
-func (er *Exporter) handleDataRow(rows [][]interface{}, dataStartLine uint) error {
+func (er *Exporter) handleData(rows [][]*Data) error {
+	if er.cur.dataLen > 0 {
+		return fmt.Errorf("禁止重复设置数据: %s", er.cur.sheetName)
+	}
+	startX := er.cur.GetDataStartX()
+	startY := er.cur.GetDataStartY()
 	for i, row := range rows {
-		index := i + int(dataStartLine)
-		letter := tool.IndexToLetter(uint(i))
-		rowAddr, err := excelize.JoinCellName(letter, index)
-		if err != nil {
-			return fmt.Errorf("JoinCellName失败: %s-%d-%+v", letter, index, err)
+		y := i + int(startY)
+		for ii, v := range row {
+			x := ii + int(startX) // 当前字段索引
+			err := er.handleDataOne(v, x, y)
+			if err != nil {
+				return err
+			}
 		}
-		if err = er.file.SetSheetRow(er.curSheet.sheetName, rowAddr, &row); err != nil {
-			return fmt.Errorf("SetSheetRow失败: %+v", err)
-		}
+		er.cur.dataLen++
 	}
+
 	return nil
 }
 
-func (er *Exporter) handleData(rows [][]*RowData, dataStartLine uint) error {
-	curSheet, err := er.GetCurSheetInfo()
-	if err != nil {
-		return err
+func (er *Exporter) handleDataOne(info *Data, x int, y int) error {
+	if info == nil {
+		return nil
 	}
-	for i, row := range rows {
-		for ii, info := range row {
-			var (
-				columStyleId = curSheet.columnStyle[info.key] // 列的style
-				index        = i + int(dataStartLine)         // 当前字段索引
-				letter       = tool.IndexToLetter(uint(ii))   // 当前位置字母
-			)
-			rowAddr, subErr := excelize.JoinCellName(letter, index)
-			switch info.ValueType {
-			case ValueCellString: // 字符串
-				subErr = er.file.SetCellStr(curSheet.sheetName, rowAddr, tool.Any2String(info.Value))
-				if subErr != nil {
-					return fmt.Errorf("SetCellStr失败: %s-%d-%+v", letter, index, subErr)
-				}
-			default:
-				subErr = er.file.SetCellValue(curSheet.sheetName, rowAddr, info.Value)
-				if subErr != nil {
-					return fmt.Errorf("SetCellValue失败: %s-%d-%+v", letter, index, subErr)
-				}
-			}
-			// 优先列样式，字段单独样式次之
-			if columStyleId <= 0 && info.StyleId > 0 {
-				if subErr = er.file.SetCellStyle(curSheet.sheetName, rowAddr, rowAddr, info.StyleId); subErr != nil {
-					return fmt.Errorf("SetCellStyle失败: %s-%d-%+v", letter, index, subErr)
-				}
-			}
+	var (
+		xIndex       = tool.IndexToLetter(uint(x)) // 当前字段位置字母
+		columStyleId = er.cur.xStyle[xIndex]       // 列的style
+	)
+	rowAddr, err := excelize.JoinCellName(xIndex, y)
+	if err != nil {
+		return fmt.Errorf("JoinCellName失败: %s-%d-%+v", xIndex, x, err)
+	}
+	// 处理数据类型
+	switch info.valType {
+	case STRING: // 字符串
+		err = er.file.SetCellStr(er.cur.sheetName, rowAddr, tool.Any2String(info.Val))
+		if err != nil {
+			return fmt.Errorf("SetCellStr失败: %s-%d-%+v", xIndex, x, err)
+		}
+	default:
+		err = er.file.SetCellValue(er.cur.sheetName, rowAddr, info.Val)
+		if err != nil {
+			return fmt.Errorf("SetCellValue失败: %s-%d-%+v", xIndex, x, err)
 		}
 	}
-
+	// 值样式：优先列样式，字段单独样式次之
+	if columStyleId <= 0 && info.styleId > 0 {
+		if err = er.file.SetCellStyle(er.cur.sheetName, rowAddr, rowAddr, info.styleId); err != nil {
+			return fmt.Errorf("SetCellStyle失败: %s-%d-%+v", xIndex, x, err)
+		}
+	}
 	return nil
 }

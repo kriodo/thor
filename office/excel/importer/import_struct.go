@@ -63,7 +63,7 @@ package importer
 //	fieldSlice   []map[string]string
 //	appendFiled  []map[string]string
 //	body         interface{}
-//	val          reflect.Value
+//	val          reflect.Val
 //	uniqueMap    map[int][]string
 //}
 //
@@ -120,7 +120,7 @@ package importer
 //		fieldSlice:              make([]map[string]string, 0),
 //		appendFiled:             nil,
 //		body:                    body,
-//		val:                     reflect.Value{},
+//		val:                     reflect.Val{},
 //		uniqueMap:               nil,
 //	}
 //	p.val = reflect.ValueOf(body)
@@ -215,7 +215,7 @@ package importer
 //}
 //
 //// 生成结构体与Excel头映射关系
-//func (p *Processor) generateMapping(val reflect.Value, baseField string) {
+//func (p *Processor) generateMapping(val reflect.Val, baseField string) {
 //	switch val.Kind() { // nolint
 //	case reflect.Struct:
 //	case reflect.Ptr:
@@ -550,7 +550,7 @@ package importer
 //}
 //
 //// 参数赋值
-//func (p *Processor) parseValue(val reflect.Value, fieldAddr, mappingHeader, col string) ([]string, error) {
+//func (p *Processor) parseValue(val reflect.Val, fieldAddr, mappingHeader, col string) ([]string, error) {
 //	errList := make([]string, 0)
 //	fields := strings.Split(fieldAddr, ".")
 //	if len(fields) == 0 {
@@ -571,7 +571,7 @@ package importer
 //}
 //
 //// 解析
-//func (p *Processor) parse(val reflect.Value, col, mappingHeader string) ([]string, error) {
+//func (p *Processor) parse(val reflect.Val, col, mappingHeader string) ([]string, error) {
 //	errList := make([]string, 0)
 //	var err error
 //	switch val.Kind() { // nolint

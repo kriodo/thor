@@ -55,11 +55,11 @@ func (er *Exporter) SetDropByFieldKey(infos []*FieldDropInfo) error {
 
 // setDrop 设置excel下拉框属性
 func (er *Exporter) setDrop(info *DropInfo) error {
-	if er.curSheet == nil {
+	if er.cur == nil {
 		return fmt.Errorf("未设置sheet: %s", info.UniqueKey)
 	}
 	if info.XIndex == "" || info.UniqueKey == "" {
-		return fmt.Errorf("%s的Drop的参数不能为空", er.curSheet.sheetName)
+		return fmt.Errorf("%s的Drop的参数不能为空", er.cur.sheetName)
 	}
 	// 以被引用的sheet表为基准，先创建隐藏sheet页，再设置引用该sheet的所有列
 	// 只能调用一次，不然会重复创建隐藏sheet
@@ -117,11 +117,11 @@ func (er *Exporter) setDrop(info *DropInfo) error {
 		}
 	}
 	// 在第一个sheet页应用数据验证规则
-	err := er.file.AddDataValidation(er.curSheet.sheetName, dv)
+	err := er.file.AddDataValidation(er.cur.sheetName, dv)
 	if err != nil {
 		return fmt.Errorf("SetDropList失败: %s %+v", info.UniqueKey, err)
 	}
-	key := er.curSheet.sheetName + "-" + info.XIndex
+	key := er.cur.sheetName + "-" + info.XIndex
 	er.dropInfo[key] = &DropInfo{
 		UniqueKey:   info.UniqueKey,
 		XIndex:      info.XIndex,

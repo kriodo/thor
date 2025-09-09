@@ -43,7 +43,7 @@ func TestExporter(t *testing.T) {
 			}}}},
 		{Title: "备注", FieldKey: "remark"},
 	}
-	err = export.SetTree(headers1).Error()
+	err = export.SetHeaderTree(headers1).Error()
 	if err != nil {
 		t.Log(err)
 		return
@@ -141,7 +141,7 @@ func TestExporter(t *testing.T) {
 	headers2 = append(headers2, &header.Header{Id: 100007, Pid: 10004, Title: "个人基数", FieldKey: "after_old_age_personnel_base"})
 	headers2 = append(headers2, &header.Header{Id: 100008, Pid: 10004, Title: "个人比例", FieldKey: "after_old_age_personnel_rate"})
 	headers2 = append(headers2, &header.Header{Id: 107, Pid: 0, Title: "备注", FieldKey: "remark"})
-	export.SetListById(headers2)
+	export.SetHeaderListById(headers2)
 	// 设置下拉框
 	err = export.SetDrop([]*DropInfo{
 		{
@@ -220,7 +220,7 @@ func TestExporter(t *testing.T) {
 	headers3 = append(headers3, &header.Header{Pkey: "after_old_age_personnel", Title: "个人基数", FieldKey: "after_old_age_personnel_base"})
 	headers3 = append(headers3, &header.Header{Pkey: "after_old_age_personnel", Title: "个人比例", FieldKey: "after_old_age_personnel_rate"})
 	headers3 = append(headers3, &header.Header{Pkey: "", Title: "备注", FieldKey: "remark"})
-	export.SetListByPkey(headers3)
+	export.SetHeaderListByPkey(headers3)
 	var data3 []map[string]*Data
 	data3 = append(data3, map[string]*Data{
 		"name":    GetData(SetVal("乔峰"), SetValType(STRING), SetStyleId(0)),
@@ -231,6 +231,16 @@ func TestExporter(t *testing.T) {
 		"name":    GetData(SetVal("慕容复"), SetValType(STRING), SetStyleId(0)),
 		"id_card": GetData(SetVal("420101198503101724"), SetValType(STRING)),
 		"remark":  GetData(SetVal("天龙八部"), SetValType(STRING)),
+	})
+	data3 = append(data3, map[string]*Data{
+		"name":    GetData(SetVal("令狐冲"), SetValType(STRING), SetStyleId(0)),
+		"id_card": GetData(SetVal("420101197907155230"), SetValType(STRING)),
+		"remark":  GetData(SetVal("笑傲江湖"), SetValType(STRING)),
+	})
+	data3 = append(data3, map[string]*Data{
+		"name":    GetData(SetVal("东方不败"), SetValType(STRING), SetStyleId(0)),
+		"id_card": GetData(SetVal("42010119880822870X"), SetValType(STRING)),
+		"remark":  GetData(SetVal("笑傲江湖"), SetValType(STRING)),
 	})
 
 	err = export.SetDataByMap(data3).Error()

@@ -106,6 +106,8 @@ func (er *Exporter) SetStringStyle(fieldKeys []string, startLine, endLine uint) 
 	return nil
 }
 
+// ----------------------------------------[ 分割线 ]-------------------------------------------//
+
 // 根据表头进行设置表头合适的宽度
 func (er *Exporter) setHeaderWidth() error {
 	if er.err != nil {

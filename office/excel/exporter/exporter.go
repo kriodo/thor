@@ -10,14 +10,14 @@ import (
 
 // Exporter 导出
 type Exporter struct {
-	cur          *SheetInfo            // 当前sheet
-	file         *excelize.File        // 文件
-	sheet        map[string]*SheetInfo // sheet数据
-	err          error                 // 错误
-	defStyleId   int                   // 默认样式id
-	dropInfo     map[string]*DropInfo  // sheet+字段 -> 数据信息
-	dropSheetMap map[string]string     // 下拉数据隐藏sheet数据对应的key
-	dropLen      map[string]bool       // 是否超长度验证器
+	cur          *ExportSheet            // 当前sheet
+	file         *excelize.File          // 文件
+	sheet        map[string]*ExportSheet // sheet数据
+	err          error                   // 错误
+	defStyleId   int                     // 默认样式id
+	dropInfo     map[string]*DropInfo    // sheet+字段 -> 数据信息
+	dropSheetMap map[string]string       // 下拉数据隐藏sheet数据对应的key
+	dropLen      map[string]bool         // 是否超长度验证器
 }
 
 // NewExporter new一个导出处理器
@@ -56,7 +56,7 @@ func NewExporterWithFile(file *excelize.File) (*Exporter, error) {
 	sheetName := file.GetSheetList()[0]
 	er := &Exporter{
 		file:         file,
-		sheet:        make(map[string]*SheetInfo, 10),
+		sheet:        make(map[string]*ExportSheet, 10),
 		err:          nil,
 		defStyleId:   0,
 		dropInfo:     make(map[string]*DropInfo),

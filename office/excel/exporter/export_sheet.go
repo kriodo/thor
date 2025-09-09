@@ -6,12 +6,11 @@ import (
 	"github.com/kriodo/thor/office/tool"
 )
 
-// SheetInfo sheet相关数据
-type SheetInfo struct {
+// ExportSheet 导出sheet相关数据
+type ExportSheet struct {
 	sheetName      string                       // 表头tree数据
 	headerTree     []*header.Header             // 表头tree数据
 	fieldInfos     []*header.FieldInfo          // 字段数据 list
-	headerFieldLen int                          // 字段个数
 	fieldInfoMap   map[string]*header.FieldInfo // 字段数据 map
 	styleId        int                          // 样式id: 默认同全局
 	headerStartX   uint                         // 表头起始行号: 默认=0
@@ -20,10 +19,11 @@ type SheetInfo struct {
 	dataStartY     uint                         // 数据起始列号(在表头Y的基础上相加)
 	xStyle         map[string]int               // 列的单元格样式: 字母 -> SetStyleId
 	dataLen        uint                         // 数据量
+	headerTxt      string                       // 表头前描述
 }
 
 // GetCurSheetInfo 获取当前sheet数据
-func (er *Exporter) GetCurSheetInfo() (*SheetInfo, error) {
+func (er *Exporter) GetCurSheetInfo() (*ExportSheet, error) {
 	if er.cur == nil || er.cur.sheetName == "" {
 		return nil, fmt.Errorf("当前sheet无数据")
 	}
@@ -90,7 +90,7 @@ func (er *Exporter) GetDataStartY() uint {
 }
 
 // GetHeaderEndY 获取表头结束行号y值
-func (si *SheetInfo) GetHeaderEndY() uint {
+func (si *ExportSheet) GetHeaderEndY() uint {
 	if si.headerStartY > 1 {
 		return si.headerMaxLevel + si.headerStartY - 1
 	}
@@ -98,22 +98,22 @@ func (si *SheetInfo) GetHeaderEndY() uint {
 }
 
 // GetDataStartX 获取数据开始列号x值
-func (si *SheetInfo) GetDataStartX() uint {
+func (si *ExportSheet) GetDataStartX() uint {
 	return si.headerStartX
 }
 
 // GetDataStartY 获取数据开始行号y值
-func (si *SheetInfo) GetDataStartY() uint {
+func (si *ExportSheet) GetDataStartY() uint {
 	return si.GetHeaderEndY() + si.dataStartY + 1
 }
 
+// ----------------------------------------[ 分割线 ]-------------------------------------------//
 // 初始化一个sheet
 func (er *Exporter) initSheetInfo(sheetName string) {
-	sheet := &SheetInfo{
+	sheet := &ExportSheet{
 		sheetName:      sheetName,
 		headerTree:     nil,
 		fieldInfos:     nil,
-		headerFieldLen: 0,
 		fieldInfoMap:   make(map[string]*header.FieldInfo),
 		styleId:        er.defStyleId,
 		headerStartX:   0,

@@ -95,9 +95,9 @@ func (ipv2 *ImportProcessorV2) SetTree(tree []*header.Header) *ImportProcessorV2
 		ipv2.err = fmt.Errorf("表头不能设置为空")
 	}
 	ipv2.clear()
-	ipv2.verifyHeaderMap = header.FormatTree(tree, 1, nil)
+	//ipv2.verifyHeaderMap = header.FormatTree(tree, 1, nil)
 	ipv2.tempHeader = tree
-	ipv2.headerLength = header.MaxLevel(tree, 1)
+	//ipv2.headerLength = header.MaxLevel(tree, 1)
 	ipv2.rowStartLine = ipv2.headerLength + 1
 	return ipv2
 }
@@ -105,15 +105,15 @@ func (ipv2 *ImportProcessorV2) SetTree(tree []*header.Header) *ImportProcessorV2
 // SetList 设置list数据 [此模式id、pid必须填写]
 func (ipv2 *ImportProcessorV2) SetList(headers []*header.Header) *ImportProcessorV2 {
 	ipv2.clear()
-	err := header.checkHeaderId(headers)
+	err := header.CheckHeaderId(headers)
 	if err != nil {
 		ipv2.err = err
 		return ipv2
 	}
 	tree := header.ListToTree(headers, 0)
-	ipv2.verifyHeaderMap = header.FormatTree(tree, 1, nil)
+	//ipv2.verifyHeaderMap = header.FormatTree(tree, 1, nil)
 	ipv2.tempHeader = tree
-	ipv2.headerLength = header.MaxLevel(tree, 1)
+	//ipv2.headerLength = header.MaxLevel(tree, 1)
 	ipv2.rowStartLine = ipv2.headerLength + 1
 	return ipv2
 }

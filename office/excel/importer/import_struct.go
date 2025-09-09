@@ -167,7 +167,7 @@ package importer
 //	var (
 //		err    error
 //		header [][]string
-//		rows   [][]string
+//		origRows   [][]string
 //	)
 //
 //	defer func() {
@@ -199,7 +199,7 @@ package importer
 //		return nil, err
 //	}
 //
-//	rows, header, err = p.getUploadExcel()
+//	origRows, header, err = p.getUploadExcel()
 //	if err != nil {
 //		return nil, err
 //	}
@@ -211,7 +211,7 @@ package importer
 //		}
 //	}
 //
-//	return p.rows(rows, header)
+//	return p.origRows(origRows, header)
 //}
 //
 //// 生成结构体与Excel头映射关系
@@ -272,11 +272,11 @@ package importer
 //}
 //
 //// 数据绑定
-//func (p *Processor) rows(rows, header [][]string) (*ParseResult, error) {
+//func (p *Processor) origRows(origRows, header [][]string) (*ParseResult, error) {
 //	var (
 //		ret = &ParseResult{
 //			ID:     p.uniqueID,
-//			Total:  len(rows),
+//			Total:  len(origRows),
 //			Status: PROCESSING,
 //			ErrMap: make(map[int][]string),
 //		}
@@ -292,12 +292,12 @@ package importer
 //	if len(p.appendFiled) > 0 {
 //		startIndex := len(p.fieldSlice)
 //		ret.DynamicContent = make(map[int]map[string]string)
-//		for k1 := range rows {
+//		for k1 := range origRows {
 //			m := make(map[string]string)
 //			for k2, filed := range p.appendFiled {
 //				var colVal string
-//				if len(rows[k1]) > startIndex+k2 {
-//					colVal = strings.TrimSpace(rows[k1][startIndex+k2])
+//				if len(origRows[k1]) > startIndex+k2 {
+//					colVal = strings.TrimSpace(origRows[k1][startIndex+k2])
 //				}
 //				m[filed[ExcelKeySign]] = colVal // 原始数据
 //			}
@@ -306,7 +306,7 @@ package importer
 //	}
 //
 //	if p.noMapping { // 顺序赋值（复杂表头）
-//		for i := 0; i < len(rows); i++ {
+//		for i := 0; i < len(origRows); i++ {
 //			var (
 //				dateErrList       []string
 //				mappingErrList    []string
@@ -318,11 +318,11 @@ package importer
 //			newBodyVal.Elem().Set(p.val.Elem())
 //			// 循环行数据
 //			for index, m := range p.fieldSlice {
-//				if len(rows[i]) < index+1 {
+//				if len(origRows[i]) < index+1 {
 //					continue
 //				}
 //				var (
-//					colVal        = strings.TrimSpace(rows[i][index])
+//					colVal        = strings.TrimSpace(origRows[i][index])
 //					key           string
 //					mappingHeader string
 //				)
@@ -375,7 +375,7 @@ package importer
 //			}
 //		}
 //	} else { // 表头赋值
-//		for i := 0; i < len(rows); i++ {
+//		for i := 0; i < len(origRows); i++ {
 //			var (
 //				dateErrList       []string
 //				mappingErrList    []string
@@ -386,7 +386,7 @@ package importer
 //			)
 //			newBodyVal.Elem().Set(p.val.Elem())
 //			// 循环行数据
-//			for index, col := range rows[i] {
+//			for index, col := range origRows[i] {
 //				var (
 //					colVal        = strings.TrimSpace(col)
 //					key           string
@@ -500,11 +500,11 @@ package importer
 //		}
 //	}
 //	// 获取处理excel数据
-//	rows, err := readExcel2(p.file, p.sheetName)
+//	origRows, err := readExcel2(p.file, p.sheetName)
 //	if err != nil {
 //		return nil, nil, err
 //	}
-//	l := len(rows)
+//	l := len(origRows)
 //	if l <= 0 {
 //		return nil, nil, errors.New("文件有效数据为空")
 //	}
@@ -515,11 +515,11 @@ package importer
 //	if l > p.maxRowNum {
 //		return nil, nil, fmt.Errorf("文件数据量超限：%d", p.maxErrNum)
 //	}
-//	if p.rowStartLine > len(rows) {
+//	if p.rowStartLine > len(origRows) {
 //		return nil, nil, fmt.Errorf("数据起始行号错误：%d", p.rowStartLine)
 //	}
-//	header := rows[:p.headerLength]
-//	data := rows[p.rowStartLine:]
+//	header := origRows[:p.headerLength]
+//	data := origRows[p.rowStartLine:]
 //
 //	return data, header, nil
 //}

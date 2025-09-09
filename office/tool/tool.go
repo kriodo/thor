@@ -178,20 +178,6 @@ func PageSize(total, groupSize int) int {
 	return int(math.Ceil(float64(total) / float64(groupSize))) //page总数
 }
 
-// ExcelIndexLetter 根据行的index获取行字母
-func ExcelIndexLetter(rowIndex uint) string {
-	letters := []string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"}
-	result := letters[rowIndex%26]
-	rowIndex = rowIndex / 26
-	for rowIndex > 0 {
-		rowIndex = rowIndex - 1
-		result = letters[rowIndex%26] + result
-		rowIndex = rowIndex / 26
-	}
-
-	return result
-}
-
 func Any2String(value interface{}) string {
 	if value == nil {
 		return ""

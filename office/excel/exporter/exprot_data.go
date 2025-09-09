@@ -52,41 +52,6 @@ const (
 	FLOAT   ValueType = 22 // 浮点
 )
 
-// SetHeaderStartX 设置表头起始列（必须SetHeader之前操作）
-func (er *Exporter) SetHeaderStartX(index uint) *Exporter {
-	curSheet, err := er.GetCurSheetInfo()
-	if err != nil {
-		er.err = err
-		return er
-	}
-	if len(curSheet.headerTree) > 0 {
-		er.err = fmt.Errorf("SetHeaderStartX必须在设置表头之前")
-		return er
-	}
-	curSheet.headerStartX = index
-	er.sheet[er.cur.sheetName] = curSheet
-	return er
-}
-
-// SetHeaderStartY 设置表头起始行（必须SetHeader之前操作）
-func (er *Exporter) SetHeaderStartY(index uint) *Exporter {
-	curSheet, err := er.GetCurSheetInfo()
-	if err != nil {
-		er.err = err
-		return er
-	}
-	if len(curSheet.headerTree) > 0 {
-		er.err = fmt.Errorf("SetHeaderStartY必须在设置表头之前")
-		return er
-	}
-	if index <= 1 {
-		index = 1
-	}
-	curSheet.headerStartY = index
-	er.sheet[er.cur.sheetName] = curSheet
-	return er
-}
-
 // SetDataStartX 设置数据起始行（必须SetHeader之前操作）
 func (er *Exporter) SetDataStartX(index uint) *Exporter {
 	curSheet, err := er.GetCurSheetInfo()
@@ -129,11 +94,12 @@ func (er *Exporter) SetDataByMap(dataMap []map[string]*Data) *Exporter {
 		return er
 	}
 	rows := make([][]*Data, 0, len(dataMap))
+	headerFieldLen := len(curSheet.fieldInfos)
 	for _, data := range dataMap {
-		row := make([]*Data, curSheet.headerFieldLen)
+		row := make([]*Data, headerFieldLen)
 		for key, val := range data {
 			if info, exi := curSheet.fieldInfoMap[key]; exi {
-				if int(info.XIndex) > curSheet.headerFieldLen {
+				if int(info.XIndex) > headerFieldLen {
 					er.err = fmt.Errorf("字段的索引错误: %s-%d", key, info.XIndex)
 					return er
 				}
@@ -149,6 +115,8 @@ func (er *Exporter) SetDataByMap(dataMap []map[string]*Data) *Exporter {
 	}
 	return er
 }
+
+// ----------------------------------------[ 分割线 ]-------------------------------------------//
 
 func (er *Exporter) handleData(rows [][]*Data) error {
 	if er.cur.dataLen > 0 {

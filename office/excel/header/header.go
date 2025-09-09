@@ -9,20 +9,20 @@ import (
 
 // Header excel表头参数
 type Header struct {
-	Title    string     `json:"title,omitempty"`     // [必填]名称
-	FieldKey string     `json:"field_key,omitempty"` // [必填]字段值key(必须唯一)
-	Children []*Header  `json:"children,omitempty"`  // [非必填]子集
-	Id       int64      `json:"id,omitempty"`        // [非必填]id
-	Pid      int64      `json:"pid,omitempty"`       // [非必填]pid
-	Pkey     string     `json:"pkey,omitempty"`      // [非必填]pkey
-	Weight   int        `json:"weight,omitempty"`    // [非必填]排序权重: 越大越靠前
-	Export   ExportAttr `json:"export,omitempty"`    // [非必填]导出扩展内容
-	Import   ImportAttr `json:"import,omitempty"`    // [非必填]导入扩展内容
+	Title    string    `json:"title,omitempty"`     // [必填]名称
+	FieldKey string    `json:"field_key,omitempty"` // [必填]字段值key(必须唯一)
+	Children []*Header `json:"children,omitempty"`  // [非必填]子集
+	Id       int64     `json:"id,omitempty"`        // [非必填]id
+	Pid      int64     `json:"pid,omitempty"`       // [非必填]pid
+	Pkey     string    `json:"pkey,omitempty"`      // [非必填]pkey
+	Weight   int       `json:"weight,omitempty"`    // [非必填]排序权重: 越大越靠前
+
+	Export ExportAttr `json:"export,omitempty"` // [非必填]导出扩展内容
+	Import ImportAttr `json:"import,omitempty"` // [非必填]导入扩展内容
 
 	isLast         bool // [内置属性]是否最后一层表头
 	level          uint // [内置属性]层级
 	childrenMaxLen uint // [内置属性]子集最大数
-
 }
 
 type ExportAttr struct {
@@ -33,17 +33,18 @@ type ExportAttr struct {
 type ImportAttr struct {
 	OtherTitle []string `json:"other_title,omitempty"` // [导入]其他名称：如果title匹配不上会根据此根据集合进行匹配(注意：不验证表头参数)
 	LikeTitle  string   `json:"like_title,omitempty"`  // [导入]模糊名称(只支持一级表头)：如果title匹配不上会根据此根据集合进行匹配(注意：不验证表头参数)
-	IsRequired bool     `json:"is_required,omitempty"` // [导入]验证是否存在
+	IsRequired bool     `json:"is_required,omitempty"` // [导入]验证字段是否必须存在
 }
 
 // FieldInfo 表头字段的信息
 type FieldInfo struct {
-	Key        string  `json:"key,omitempty"`         // 字段key
-	XIndex     uint    `json:"x_index,omitempty"`     // 字段所在X位置(从0开始)
-	YIndex     uint    `json:"y_index,omitempty"`     // 字段所在Y位置(从1开始)
-	IsLast     bool    `json:"is_last,omitempty"`     // 是否最后一级字段
-	IsRequired bool    `json:"is_required,omitempty"` // 是否必填
-	Width      float64 `json:"width,omitempty"`       // 字段宽度
+	Key        string   `json:"key,omitempty"`         // 字段key
+	XIndex     uint     `json:"x_index,omitempty"`     // 字段所在X位置(从0开始)
+	YIndex     uint     `json:"y_index,omitempty"`     // 字段所在Y位置(从1开始)
+	IsLast     bool     `json:"is_last,omitempty"`     // 是否最后一级字段
+	Width      float64  `json:"width,omitempty"`       // [导出]字段宽度
+	IsRequired bool     `json:"is_required,omitempty"` // [导入]是否必填
+	JoinTitle  []string `json:"join_title,omitempty"`  // [导入]字段名称数组
 }
 
 func (h *Header) SetChildrenMaxLen(val uint) {
@@ -63,8 +64,20 @@ func (h *Header) GetIsLast() bool {
 	return h.isLast
 }
 
+type FormatScene string
+
+const (
+	Export FormatScene = "export"
+	Import FormatScene = "import"
+)
+
+type FormatHeaderData struct {
+	Scene     FormatScene
+	FieldInfo []*FieldInfo
+}
+
 // FormatHeaderInfo 格式化表头tree数据，获取相关表头的相关信息
-func FormatHeaderInfo(tree []*Header, level uint, fieldInfo []*FieldInfo) ([]*FieldInfo, error) {
+func FormatHeaderInfo(data *FormatHeaderData, tree []*Header, level uint, joinTitle []string) error {
 	// 按照 weight 的逆序排序
 	sort.Sort(HeadSlice(tree))
 	for i, header := range tree {
@@ -72,22 +85,37 @@ func FormatHeaderInfo(tree []*Header, level uint, fieldInfo []*FieldInfo) ([]*Fi
 		tree[i].level = level
 		if childLen == 0 {
 			tree[i].isLast = true
-			fieldInfo = append(fieldInfo, &FieldInfo{
-				Key:        header.FieldKey,
-				YIndex:     level,
-				IsLast:     childLen == 0,
-				IsRequired: header.Import.IsRequired,
-				Width:      CalHeaderTitleWidth(header.Title),
-			})
-			continue
-		}
-		var err error
-		fieldInfo, err = FormatHeaderInfo(header.Children, level+1, fieldInfo)
-		if err != nil {
-			return nil, err
+			fi := &FieldInfo{
+				Key:    header.FieldKey,
+				YIndex: level,
+				IsLast: true,
+			}
+			// 根据场景进行处理数据
+			switch data.Scene {
+			case Export:
+				fi.Width = CalHeaderTitleWidth(header.Title)
+			case Import:
+				if level == 1 {
+					joinTitle = nil
+				}
+				fi.IsRequired = header.Import.IsRequired
+				fi.JoinTitle = append(fi.JoinTitle, joinTitle...)
+				fi.JoinTitle = append(fi.JoinTitle, header.Title)
+			}
+			data.FieldInfo = append(data.FieldInfo, fi)
+		} else {
+			var err error
+			if level == 1 {
+				joinTitle = nil
+			}
+			joinTitle = append(joinTitle, header.Title)
+			err = FormatHeaderInfo(data, header.Children, level+1, joinTitle)
+			if err != nil {
+				return err
+			}
 		}
 	}
-	return fieldInfo, nil
+	return nil
 }
 
 // ListToTree 将list转为tree结构
@@ -216,6 +244,16 @@ func SplitTitle(title string) string {
 		return "." + title
 	}
 	return ""
+}
+
+func SplitTitleV2(titles []string) string {
+	arr := make([]string, 0, len(titles))
+	for _, v := range titles {
+		if v != "" {
+			arr = append(arr, v)
+		}
+	}
+	return strings.Join(arr, ".")
 }
 
 type HeadSlice []*Header

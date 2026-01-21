@@ -49,7 +49,7 @@ func WritePDFByTemplate(req *WritePDFByTemplateReq) error {
 
 	// ===== 在指定位置写内容 =====
 	for i, v := range req.Contents {
-		if !IsLoc(v.X) || !IsLoc(v.Y) || v.FontName == "" {
+		if !IsLoc(v.X) || !IsLoc(v.Y) {
 			continue
 		}
 		if v.PageNo <= 0 {
@@ -57,6 +57,9 @@ func WritePDFByTemplate(req *WritePDFByTemplateReq) error {
 		}
 		if v.FontH <= 0 {
 			v.FontH = 10
+		}
+		if v.FontName == "" {
+			v.FontName = "兰米仿宋.ttf"
 		}
 		if v.FontSize <= 0 {
 			v.FontSize = 20

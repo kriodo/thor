@@ -14,6 +14,8 @@ func (ir *Importer) SetHeaderTree(tree []*header.Header) *Importer {
 		ir.err = fmt.Errorf("该sheet重复设置表头信息: %s", ir.cur.sheetName)
 		return ir
 	}
+	ir.cur.isSet = true
+	ir.cur.headerTree = tree
 	if !ir.cur.noHeader { // 设置了表头
 		if len(tree) == 0 {
 			ir.err = fmt.Errorf("表头不能设置为空: %s", ir.cur.sheetName)
@@ -26,12 +28,16 @@ func (ir *Importer) SetHeaderTree(tree []*header.Header) *Importer {
 		if ir.err != nil {
 			return ir
 		}
-		ir.cur.fieldInfos = formatData.FieldInfo
-		ir.cur.headerTree = tree
+		ir.cur.fields = formatData.FieldInfo
 		ir.cur.headerLength = header.MaxLevel(tree, 1)
+		ir.err = ir.handleRowBefore()
+		if ir.err != nil {
+			return ir
+		}
 	}
-	ir.cur.isSet = true
-	ir.err = ir.handleRowBefore()
+	// 绑定表头数据
+	ir.err = ir.bindImportHeader()
+
 	if ir.err != nil {
 		return ir
 	}

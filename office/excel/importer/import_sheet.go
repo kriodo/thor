@@ -4,12 +4,12 @@ import "github.com/kriodo/thor/office/excel/header"
 
 // ImportSheet 导入sheet相关数据
 type ImportSheet struct {
-	isSet        bool                         // 是否设置过表头信息
-	sheetName    string                       // 表头tree数据
-	noHeader     bool                         // 是否有表头
-	headerTree   []*header.Header             // 表头tree数据
-	fieldInfos   []*header.FieldInfo          // 字段数据 list
-	fieldInfoMap map[string]*header.FieldInfo // 字段数据 map （key:info）
+	isSet      bool                         // 是否设置过表头信息
+	sheetName  string                       // 表头tree数据
+	noHeader   bool                         // 是否有表头
+	headerTree []*header.Header             // 表头tree数据
+	fields     []*header.FieldInfo          // 字段数据 list
+	fieldMap   map[string]*header.FieldInfo // 字段数据 map （key:info）
 
 	// 表头参数
 	headerLength    uint // 表头层数
@@ -18,11 +18,10 @@ type ImportSheet struct {
 	maxOrigLen      int  // 数据最大数量
 
 	// 数据
-	origRows         [][]string                   // 原始数据
-	headerTitleInfos map[string]*ImportHeaderInfo // 表头索引对应表头拼接: 0|"A"|"基本信息.姓名"
-	fieldCheckMap    map[string]bool              // 验证表头的字段必存在
-	field2dataMap    []map[string]string          // 绑定后数据
-
+	//origRows        [][]string                   // 原始数据
+	letter2TitleMap map[string]*ImportHeaderInfo // 表头索引对应表头拼接: A => 0|"A"|"基本信息.姓名"
+	index2keyMap    map[int]string               // 索引对应字段key，未匹配到=join_title
+	data            []map[string]string          // 绑定后数据
 }
 
 type ImportHeaderInfo struct {

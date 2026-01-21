@@ -31,9 +31,9 @@ type ExportAttr struct {
 }
 
 type ImportAttr struct {
+	IsRequired bool     `json:"is_required,omitempty"` // [导入]验证字段是否必须存在
 	OtherTitle []string `json:"other_title,omitempty"` // [导入]其他名称：如果title匹配不上会根据此根据集合进行匹配(注意：不验证表头参数)
 	LikeTitle  string   `json:"like_title,omitempty"`  // [导入]模糊名称(只支持一级表头)：如果title匹配不上会根据此根据集合进行匹配(注意：不验证表头参数)
-	IsRequired bool     `json:"is_required,omitempty"` // [导入]验证字段是否必须存在
 }
 
 // FieldInfo 表头字段的信息
@@ -79,7 +79,9 @@ type FormatHeaderData struct {
 // FormatHeaderInfo 格式化表头tree数据，获取相关表头的相关信息
 func FormatHeaderInfo(data *FormatHeaderData, tree []*Header, level uint, joinTitle []string) error {
 	// 按照 weight 的逆序排序
-	sort.Sort(HeadSlice(tree))
+	if data.Scene == Export {
+		sort.Sort(HeadSlice(tree))
+	}
 	for i, header := range tree {
 		childLen := len(header.Children)
 		tree[i].level = level

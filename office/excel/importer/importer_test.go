@@ -40,6 +40,7 @@ func TestNewImporter(t *testing.T) {
 				{Title: "个人比例", FieldKey: "after_old_age_personnel_rate"},
 			}}}},
 		{Title: "备注", FieldKey: "remark"},
+		//{Title: "测试", FieldKey: "demo", Import: header.ImportAttr{IsRequired: true}},
 	}
 	err = ir.SetHeaderTree(headers1).Error()
 	if err != nil {

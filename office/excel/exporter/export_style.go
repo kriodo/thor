@@ -95,7 +95,7 @@ func (er *Exporter) SetStringStyle(fieldKeys []string, startLine, endLine uint) 
 		return err
 	}
 	for _, key := range fieldKeys {
-		if val, exi := curSheet.fieldInfoMap[key]; exi {
+		if val, exi := curSheet.fieldMap[key]; exi {
 			keyAbc := tool.IndexToLetter(val.XIndex)
 			err = er.GetFile().SetCellStyle(curSheet.sheetName, fmt.Sprintf("%s%d", keyAbc, startLine), fmt.Sprintf("%s%d", keyAbc, endLine), strStyleId)
 			if err != nil {
@@ -117,7 +117,7 @@ func (er *Exporter) setHeaderWidth() error {
 	if err != nil {
 		return err
 	}
-	for _, v := range curSheet.fieldInfos {
+	for _, v := range curSheet.fields {
 		index := tool.IndexToLetter(v.XIndex)
 		err = er.file.SetColWidth(curSheet.sheetName, index, index, v.Width)
 		if err != nil {

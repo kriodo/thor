@@ -26,14 +26,14 @@ func (er *Exporter) SetHeaderTree(tree []*header.Header) *Exporter {
 	if er.err != nil {
 		return er
 	}
-	curSheet.fieldInfos = formatData.FieldInfo
-	for i, v := range curSheet.fieldInfos {
+	curSheet.fields = formatData.FieldInfo
+	for i, v := range curSheet.fields {
 		index := uint(i) + curSheet.headerStartX
 		if v.YIndex > curSheet.headerMaxLevel {
 			curSheet.headerMaxLevel = v.YIndex
 		}
 		v.XIndex = index
-		curSheet.fieldInfoMap[v.Key] = v
+		curSheet.fieldMap[v.Key] = v
 	}
 	// 处理表头
 	er.err = er.handleHeader(curSheet.headerTree, curSheet.headerStartX, curSheet.headerStartY)

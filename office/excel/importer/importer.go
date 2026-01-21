@@ -1,6 +1,7 @@
 package importer
 
 import (
+	"errors"
 	"fmt"
 	"github.com/kriodo/thor/office/excel/header"
 	"github.com/kriodo/thor/office/tool"
@@ -33,6 +34,7 @@ func NewImporter(file *excelize.File) *Importer {
 		errList:   nil,
 		maxErrNum: 0,
 		maxRowNum: 0,
+		opts:      nil,
 	}
 	if ir.file == nil {
 		ir.err = fmt.Errorf("导入文件不能为空")
@@ -48,8 +50,10 @@ func NewImporter(file *excelize.File) *Importer {
 	ir.sheet = make(map[string]*ImportSheet, sheetLen)
 	for i, sheetName := range sheetList {
 		sheet := &ImportSheet{
-			sheetName:    sheetName,
-			fieldInfoMap: make(map[string]*header.FieldInfo),
+			sheetName:       sheetName,
+			fieldMap:        make(map[string]*header.FieldInfo),
+			letter2TitleMap: make(map[string]*ImportHeaderInfo),
+			index2keyMap:    make(map[int]string),
 		}
 		if i == 0 {
 			ir.cur = sheet
@@ -93,7 +97,7 @@ func (ir *Importer) GetRows() []map[string]string {
 		return nil
 	}
 	ir.cur = sheet
-	return ir.cur.field2dataMap
+	return ir.cur.data
 }
 
 // 获取错误
@@ -106,19 +110,19 @@ func (ir *Importer) PrintRows(data map[string]string) string {
 	val := "\n"
 	if ir.cur.noHeader {
 		var letters []string
-		for k := range ir.cur.headerTitleInfos {
+		for k := range ir.cur.letter2TitleMap {
 			letters = append(letters, k)
 		}
 		letters = tool.UniqueString(letters)
 		tool.SortStrings(letters)
 		for _, letter := range letters {
-			info, exi := ir.cur.headerTitleInfos[letter]
+			info, exi := ir.cur.letter2TitleMap[letter]
 			if exi {
 				val += fmt.Sprintf("%s : %s \n", info.Title, data[info.Title])
 			}
 		}
 	} else {
-		for _, info := range ir.cur.fieldInfos {
+		for _, info := range ir.cur.fields {
 			val += fmt.Sprintf("%s : %s \n", header.SplitTitleV2(info.JoinTitle), data[info.Key])
 		}
 	}
@@ -136,30 +140,58 @@ func (ir *Importer) handleRowBefore() error {
 	}
 	origRows, err := ir.getOrigRows()
 	if err != nil {
-		ir.err = fmt.Errorf("获取原始数据错误：%s-%+v", ir.cur.sheetName, err)
+		ir.err = fmt.Errorf("获取原始数据错误：%s-%+rows", ir.cur.sheetName, err)
 		return ir.err
 	}
 	sheet.origRows = origRows
 	ir.cur.origRows = origRows
-	origLen := len(origRows)
-	var hasData bool
-	for i, v := range origRows {
-		dataLen := len(v)
-		if dataLen > 0 && !hasData {
-			ir.cur.headerStartLine = i
-			hasData = true
-		}
+	var (
+		origLen            = len(origRows)                        // 数据总量
+		firstLevelLen      = len(ir.cur.headerTree)               // 第一层表头标题数量
+		firstLevelTitleMap = make(map[string]bool, firstLevelLen) // 第一层表头标题
+		firstMatchNum      int                                    // 第一层标题匹配上数量
+		wantMatchNum       = 2                                    // 需要匹配上的数量
+		matchMaxLine       = 50                                   // 匹配表头最大行数，该数据内未匹配到数据就放弃
+		isEndMatch         bool                                   // 是否结束匹配
+	)
+	for _, info := range ir.cur.headerTree {
+		firstLevelTitleMap[info.Title] = true
+	}
+	// 如果表头第一层就一个数据那就1个匹配上即可
+	if firstLevelLen == 1 {
+		wantMatchNum = 1
+	}
+	for index, rows := range origRows {
+		dataLen := len(rows)
 		if ir.cur.maxOrigLen < dataLen {
 			ir.cur.maxOrigLen = dataLen
 		}
+		if isEndMatch {
+			continue
+		}
+		// 超过最大匹配次数，放弃匹配
+		if index > matchMaxLine {
+			isEndMatch = true
+			continue
+		}
+		for _, row := range rows {
+			if firstLevelTitleMap[row] {
+				firstMatchNum += 1
+			}
+		}
+		// 达到匹配数量，结束匹配
+		if firstMatchNum >= wantMatchNum {
+			ir.cur.headerStartLine = index
+			isEndMatch = true
+		}
+	}
+	if firstMatchNum < wantMatchNum {
+		ir.err = fmt.Errorf("%s 首行表头标题已匹配%d个，请检查表头数据是否正确", ir.cur.sheetName, firstMatchNum)
+		return ir.err
 	}
 	ir.cur.rowStartLine = ir.cur.headerStartLine + int(ir.cur.headerLength)
 	if origLen < ir.cur.rowStartLine {
 		return nil
-	}
-	ir.err = ir.bindImportHeader()
-	if ir.err != nil {
-		return ir.err
 	}
 	return nil
 }
@@ -210,85 +242,64 @@ func (ir *Importer) bindImportHeader() error {
 			}
 		}
 	}
-	ir.cur.headerTitleInfos = make(map[string]*ImportHeaderInfo, ir.cur.maxOrigLen)
+	ir.cur.letter2TitleMap = make(map[string]*ImportHeaderInfo, ir.cur.maxOrigLen)
 	for index, titles := range headerIndex2valMap {
 		letter := tool.IndexToLetter(uint(index))
-		ir.cur.headerTitleInfos[letter] = &ImportHeaderInfo{
+		ir.cur.letter2TitleMap[letter] = &ImportHeaderInfo{
 			Index:  index,
 			Letter: letter,
 			Title:  header.SplitTitleV2(titles),
 		}
 	}
+	// join_title -> 字段key
+	title2keyMap := make(map[string]string)
+	for _, info := range ir.cur.fields {
+		key := header.SplitTitleV2(info.JoinTitle)
+		title2keyMap[key] = info.Key
+	}
+	// 索引对应字段key，未匹配到=join_title
+	for i := 0; i < ir.cur.maxOrigLen; i++ {
+		letter := tool.IndexToLetter(uint(i))
+		fieldInfo, ok := ir.cur.letter2TitleMap[letter]
+		if ok && fieldInfo.Title != "" {
+			fieldKey, ok2 := title2keyMap[fieldInfo.Title]
+			if ok2 {
+				ir.cur.index2keyMap[i] = fieldKey
+			} else {
+				ir.cur.index2keyMap[i] = fieldInfo.Title
+			}
+		}
+	}
+	for _, info := range ir.cur.fields {
+		// 需要验证表头字段是否存在
+		if info.IsRequired {
+			joinTitle := header.SplitTitleV2(info.JoinTitle)
+			fieldKey, exi := title2keyMap[joinTitle]
+			if exi && fieldKey != "" { // 需要验证,并且验证不通过
+				// TODO 模糊匹配
+				ir.errList = append(ir.errList, fmt.Sprintf("%s 表头名称 %s 不存在", ir.cur.sheetName, joinTitle))
+			}
+		}
+	}
+	if len(ir.errList) > 0 {
+		ir.err = errors.New(ir.errList[0])
+		return ir.err
+	}
+
 	return nil
 }
 
 // 绑定字段数据
 func (ir *Importer) bindImportField() error {
 	dataRows := ir.cur.origRows[ir.cur.rowStartLine:]
-	title2keyMap := make(map[string]string)
-	for _, info := range ir.cur.fieldInfos {
-		key := header.SplitTitleV2(info.JoinTitle)
-		title2keyMap[key] = info.Key
-	}
 	for _, rows := range dataRows {
 		dataMap := make(map[string]string, len(rows))
 		for index, row := range rows {
-			letter := tool.IndexToLetter(uint(index))
-			fieldInfo, ok := ir.cur.headerTitleInfos[letter]
-			if ok && fieldInfo.Title != "" {
-				fieldKey, ok2 := title2keyMap[fieldInfo.Title]
-				if ok2 {
-					dataMap[fieldKey] = row
-				} else {
-					dataMap[fieldInfo.Title] = row
-				}
+			if key, exi := ir.cur.index2keyMap[index]; exi {
+				dataMap[key] = row
 			}
 		}
-		ir.cur.field2dataMap = append(ir.cur.field2dataMap, dataMap)
+		ir.cur.data = append(ir.cur.data, dataMap)
 	}
-	//var errList []string
-	//realHeaderName2IndexMap := make(map[string]int)
-	//for index, zh := range ir.cur.realHeaderIndex2ZhMap { // 实际数据
-	//	// 绑定坐标（重要）
-	//	name, exi := ir.cur.tempHeaderZh2NameMap[zh]
-	//	if !exi {
-	//		if !ir.cur.clearUnMatch {
-	//			realHeaderName2IndexMap[zh] = index
-	//			ir.cur.headerIndex2NameMap[index] = append(ir.cur.headerIndex2NameMap[index], zh)
-	//		}
-	//		continue
-	//	}
-	//	ir.cur.headerIndex2NameMap[index] = append(ir.cur.headerIndex2NameMap[index], name...)
-	//	for _, nm := range name {
-	//		realHeaderName2IndexMap[nm] = index
-	//	}
-	//}
-	//// 利用模糊再查一下
-	//for name, likeZh := range ir.cur.tempHeaderName2LikeZhMap {
-	//	if index, _ := realHeaderName2IndexMap[name]; index > 0 {
-	//		continue
-	//	}
-	//	for index, zh := range ir.cur.realHeaderIndex2ZhMap { // 实际数据
-	//		if strings.Contains(zh, likeZh) {
-	//			ir.cur.headerIndex2NameMap[index] = append(ir.cur.headerIndex2NameMap[index], name)
-	//			realHeaderName2IndexMap[name] = index
-	//		}
-	//	}
-	//
-	//}
-	//for name, zh := range ir.cur.tempHeaderName2ZhMap {
-	//	ok := ir.cur.fieldCheckMap[name]
-	//	index, _ := realHeaderName2IndexMap[name]
-	//	if ok && index == 0 { // 需要验证,并且验证不通过
-	//		errList = append(errList, fmt.Sprintf("%s不存在", showTitle(zh)))
-	//	}
-	//}
-	//tool.UniqueString(errList)
-	//tool.SortStrings(errList)
-	//ir.errList = errList
-	//if len(errList) > 0 {
-	//	return errors.New(errList[0])
-	//}
-
 	return nil
 }

@@ -94,11 +94,11 @@ func (er *Exporter) SetDataByMap(dataMap []map[string]*Data) *Exporter {
 		return er
 	}
 	rows := make([][]*Data, 0, len(dataMap))
-	headerFieldLen := len(curSheet.fieldInfos)
+	headerFieldLen := len(curSheet.fields)
 	for _, data := range dataMap {
 		row := make([]*Data, headerFieldLen)
 		for key, val := range data {
-			if info, exi := curSheet.fieldInfoMap[key]; exi {
+			if info, exi := curSheet.fieldMap[key]; exi {
 				if int(info.XIndex) > headerFieldLen {
 					er.err = fmt.Errorf("字段的索引错误: %s-%d", key, info.XIndex)
 					return er

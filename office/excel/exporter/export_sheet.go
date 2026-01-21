@@ -10,8 +10,8 @@ import (
 type ExportSheet struct {
 	sheetName      string                       // 表头tree数据
 	headerTree     []*header.Header             // 表头tree数据
-	fieldInfos     []*header.FieldInfo          // 字段数据 list
-	fieldInfoMap   map[string]*header.FieldInfo // 字段数据 map
+	fields         []*header.FieldInfo          // 字段数据 list
+	fieldMap       map[string]*header.FieldInfo // 字段数据 map
 	styleId        int                          // 样式id: 默认同全局
 	headerStartX   uint                         // 表头起始行号: 默认=0
 	headerStartY   uint                         // 表头起始列号: 默认=1
@@ -69,7 +69,7 @@ func (er *Exporter) GetFieldXIndex(filedKey string) string {
 		er.err = err
 		return ""
 	}
-	val, ok := curSheet.fieldInfoMap[filedKey]
+	val, ok := curSheet.fieldMap[filedKey]
 	if !ok {
 		return ""
 	}
@@ -113,8 +113,8 @@ func (er *Exporter) initSheetInfo(sheetName string) {
 	sheet := &ExportSheet{
 		sheetName:      sheetName,
 		headerTree:     nil,
-		fieldInfos:     nil,
-		fieldInfoMap:   make(map[string]*header.FieldInfo),
+		fields:         nil,
+		fieldMap:       make(map[string]*header.FieldInfo),
 		styleId:        er.defStyleId,
 		headerStartX:   0,
 		headerStartY:   1,
